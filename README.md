@@ -42,13 +42,13 @@ Not yet available — this plugin is pending review.
 
 ### Manual installation
 
-1. Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/Charlesxiaomi/obsidian-mobile-agent/releases/latest).
+1. Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/Charlesxiaomi/claudian-mobile/releases/latest).
 2. Put them in `<your vault>/.obsidian/plugins/claudian-mobile/`.
 3. Reload Obsidian and enable the plugin under **Settings → Community plugins**.
 
 ### Via BRAT
 
-Install [BRAT](https://github.com/TfTHacker/obsidian42-brat) and add the beta plugin `Charlesxiaomi/obsidian-mobile-agent`.
+Install [BRAT](https://github.com/TfTHacker/obsidian42-brat) and add the beta plugin `Charlesxiaomi/claudian-mobile`.
 
 ## Development
 
