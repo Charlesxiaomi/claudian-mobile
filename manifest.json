@@ -3,8 +3,8 @@
   "name": "Claudian Mobile",
   "version": "0.1.0",
   "minAppVersion": "1.7.2",
-  "description": "A minimal AI writing/knowledge agent for your vault. Calls the Anthropic API directly, so it works on Obsidian mobile (Android/iOS) as well as desktop.",
-  "author": "Claudian Mobile contributors",
-  "authorUrl": "",
+  "description": "A minimal AI writing and knowledge agent for your vault. Calls the Anthropic API directly, so it works on mobile as well as desktop.",
+  "author": "Charlesxiaomi",
+  "authorUrl": "https://github.com/Charlesxiaomi",
   "isDesktopOnly": false
 }
