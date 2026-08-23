@@ -1,0 +1,31 @@
+.claudian-mobile-composer {
+  flex: 0 0 auto;
+  border-top: 1px solid var(--background-modifier-border);
+  padding: var(--size-4-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-2);
+}
+
+.claudian-mobile-input {
+  width: 100%;
+  min-height: 44px;
+  max-height: 160px;
+  resize: none;
+  border-radius: var(--radius-m);
+  padding: var(--size-4-2);
+  font-size: var(--font-ui-medium);
+}
+
+.claudian-mobile-composer-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--size-4-2);
+}
+
+.claudian-mobile-send-button,
+.claudian-mobile-stop-button {
+  min-height: 44px;
+  min-width: 88px;
+  border-radius: var(--radius-m);
+}

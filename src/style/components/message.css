@@ -1,0 +1,35 @@
+.claudian-mobile-message {
+  max-width: 100%;
+  border-radius: var(--radius-l);
+  padding: var(--size-4-3);
+  font-size: var(--font-ui-medium);
+  line-height: var(--line-height-normal);
+}
+
+.claudian-mobile-message-user {
+  align-self: flex-end;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.claudian-mobile-message-assistant {
+  align-self: flex-start;
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  width: 100%;
+}
+
+.claudian-mobile-message-error {
+  align-self: stretch;
+  background: var(--background-modifier-error);
+  color: var(--text-error);
+}
+
+.claudian-mobile-message-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.claudian-mobile-message-text:empty {
+  display: none;
+}

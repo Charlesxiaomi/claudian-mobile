@@ -1,0 +1,15 @@
+.claudian-mobile-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0;
+}
+
+.claudian-mobile-messages {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: var(--size-4-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-3);
+}
