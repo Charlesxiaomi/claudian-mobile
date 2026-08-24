@@ -2,8 +2,11 @@ import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
 
 import { DEFAULT_BASE_URL } from "@/core/AnthropicClient";
 import type { AgentSettings } from "@/core/types";
+import { LANGUAGE_NAMES, LANGUAGE_SETTINGS, setLanguage, t } from "@/i18n";
+import type { LanguageSetting } from "@/i18n";
 
 export const DEFAULT_SETTINGS: AgentSettings = {
+  language: "auto",
   apiKey: "",
   baseUrl: DEFAULT_BASE_URL,
   model: "claude-sonnet-5",
@@ -12,7 +15,8 @@ export const DEFAULT_SETTINGS: AgentSettings = {
   systemPrompt:
     "You are a helpful writing and knowledge assistant embedded in the user's Obsidian vault. " +
     "Use the provided tools to read, search, create, and edit notes on the user's behalf. " +
-    "Prefer patch_note for small edits and write_note only when replacing a note's full content.",
+    "Prefer patch_note for small edits and write_note only when replacing a note's full content. " +
+    "Reply in the language the user writes in.",
 };
 
 const MODEL_SUGGESTIONS = ["claude-opus-5", "claude-sonnet-5", "claude-haiku-4-5-20251001"];
@@ -20,6 +24,8 @@ const MODEL_SUGGESTIONS = ["claude-opus-5", "claude-sonnet-5", "claude-haiku-4-5
 export interface SettingsHost {
   settings: AgentSettings;
   saveSettings(): Promise<void>;
+  /** Lets the plugin re-label anything already on screen after a language switch. */
+  onLanguageChanged?(): void;
 }
 
 export class ClaudianMobileSettingsTab extends PluginSettingTab {
@@ -33,13 +39,28 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
+    const s = t().settings;
 
     new Setting(containerEl)
-      .setName("Anthropic API key")
-      .setDesc(
-        "Stored in plaintext in this device's vault config (.obsidian/plugins/claudian-mobile/data.json). " +
-          "Do not use a key you aren't comfortable having on this device, especially if the vault is synced.",
-      )
+      .setName(s.language)
+      .setDesc(s.languageDesc)
+      .addDropdown((dropdown) => {
+        for (const value of LANGUAGE_SETTINGS) {
+          dropdown.addOption(value, value === "auto" ? s.languageAuto : LANGUAGE_NAMES[value]);
+        }
+        dropdown.setValue(this.host.settings.language).onChange(async (value) => {
+          this.host.settings.language = value as LanguageSetting;
+          setLanguage(this.host.settings.language);
+          await this.host.saveSettings();
+          this.host.onLanguageChanged?.();
+          // Redraw so every label below picks up the new locale.
+          this.display();
+        });
+      });
+
+    new Setting(containerEl)
+      .setName(s.apiKey)
+      .setDesc(s.apiKeyDesc)
       .addText((text) => {
         text.inputEl.type = "password";
         text
@@ -52,12 +73,8 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
-      .setName("Base URL")
-      .setDesc(
-        "The Anthropic Messages API endpoint to call. Change this to point at a third-party or self-hosted " +
-          `gateway that implements the same /v1/messages streaming API (e.g. Kimi, GLM, or a proxy). ` +
-          `Default: ${DEFAULT_BASE_URL}`,
-      )
+      .setName(s.baseUrl)
+      .setDesc(s.baseUrlDesc(DEFAULT_BASE_URL))
       .addText((text) => {
         text
           .setPlaceholder(DEFAULT_BASE_URL)
@@ -69,8 +86,8 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
-      .setName("Model")
-      .setDesc("The model id sent to the API above. Third-party endpoints often use their own model names.")
+      .setName(s.model)
+      .setDesc(s.modelDesc)
       .addText((text) => {
         const listId = "claudian-mobile-model-suggestions";
         const datalist = text.inputEl.ownerDocument.createElement("datalist");
@@ -93,8 +110,8 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
-      .setName("Max output tokens")
-      .setDesc("Upper bound on tokens the model can generate per turn.")
+      .setName(s.maxOutputTokens)
+      .setDesc(s.maxOutputTokensDesc)
       .addText((text) => {
         text.inputEl.type = "number";
         text.setValue(String(this.host.settings.maxOutputTokens)).onChange(async (value) => {
@@ -107,8 +124,8 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
-      .setName("Max tool-use iterations")
-      .setDesc("Safety cap on how many tool-call round-trips a single reply can make.")
+      .setName(s.maxIterations)
+      .setDesc(s.maxIterationsDesc)
       .addText((text) => {
         text.inputEl.type = "number";
         text.setValue(String(this.host.settings.maxIterations)).onChange(async (value) => {
@@ -120,14 +137,12 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
         });
       });
 
-    new Setting(containerEl)
-      .setName("System prompt")
-      .addTextArea((text) => {
-        text.inputEl.rows = 6;
-        text.setValue(this.host.settings.systemPrompt).onChange(async (value) => {
-          this.host.settings.systemPrompt = value;
-          await this.host.saveSettings();
-        });
+    new Setting(containerEl).setName(s.systemPrompt).addTextArea((text) => {
+      text.inputEl.rows = 6;
+      text.setValue(this.host.settings.systemPrompt).onChange(async (value) => {
+        this.host.settings.systemPrompt = value;
+        await this.host.saveSettings();
       });
+    });
   }
 }

@@ -19,13 +19,25 @@
 
 .claudian-mobile-composer-buttons {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   gap: var(--size-4-2);
 }
 
+.claudian-mobile-new-button,
 .claudian-mobile-send-button,
 .claudian-mobile-stop-button {
   min-height: 44px;
   min-width: 88px;
   border-radius: var(--radius-m);
+}
+
+/* Sits alone on the left of the row; Send/Stop swap in on the right. */
+.claudian-mobile-new-button {
+  margin-right: auto;
+}
+
+.claudian-mobile-new-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

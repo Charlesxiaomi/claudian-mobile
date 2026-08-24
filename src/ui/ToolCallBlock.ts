@@ -1,5 +1,7 @@
 import { setIcon } from "obsidian";
 
+import { t } from "@/i18n";
+
 const TOOL_ICONS: Record<string, string> = {
   read_note: "file-text",
   write_note: "file-edit",
@@ -47,7 +49,7 @@ export class ToolCallBlockView {
     setIcon(iconEl, iconForTool(name));
     header.createSpan({ cls: "claudian-mobile-tool-call-name", text: name });
     this.summaryEl = header.createSpan({ cls: "claudian-mobile-tool-call-summary" });
-    this.statusEl = header.createSpan({ cls: "claudian-mobile-tool-call-status", text: "running…" });
+    this.statusEl = header.createSpan({ cls: "claudian-mobile-tool-call-status", text: t().toolCall.running });
 
     this.bodyEl = this.el.createDiv({ cls: "claudian-mobile-tool-call-body" });
     this.bodyEl.hide();
@@ -93,7 +95,7 @@ export class ToolCallBlockView {
   }
 
   complete(result: { content: string; isError?: boolean }): void {
-    this.statusEl.setText(result.isError ? "failed" : "done");
+    this.statusEl.setText(result.isError ? t().toolCall.failed : t().toolCall.done);
     this.statusEl.toggleClass("claudian-mobile-tool-call-error", Boolean(result.isError));
     this.resultEl.setText(result.content);
   }

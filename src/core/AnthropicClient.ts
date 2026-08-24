@@ -1,3 +1,5 @@
+import { t } from "@/i18n";
+
 import type { ConversationMessage, StreamEvent, ToolDefinition } from "./types";
 
 export const DEFAULT_BASE_URL = "https://api.anthropic.com";
@@ -106,13 +108,13 @@ function formatApiError(status: number, bodyText: string): string {
     const detail = err?.message ?? parsed.message ?? err?.code ?? undefined;
     const type = err?.type;
     if (detail || type) {
-      return `Anthropic API error ${status}${type ? ` (${type})` : ""}: ${detail ?? "no further detail provided"}`;
+      return t().api.error(status, type, detail ?? t().api.noDetail);
     }
   } catch {
     // Body wasn't JSON — fall through to the raw text below.
   }
   const trimmed = bodyText.trim();
-  return `Anthropic API error ${status}${trimmed ? `: ${trimmed.slice(0, 500)}` : ""}`;
+  return t().api.error(status, undefined, trimmed.slice(0, 500));
 }
 
 function parseSseEvent(rawEvent: string): StreamEvent | null {

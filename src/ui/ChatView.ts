@@ -2,8 +2,10 @@ import { ItemView, Notice, Platform, WorkspaceLeaf } from "obsidian";
 
 import { runAgentLoop } from "@/core/AgentLoop";
 import type { ConversationMessage } from "@/core/types";
+import { t } from "@/i18n";
 import type ClaudianMobilePlugin from "@/main";
 
+import { confirmAction } from "./ConfirmModal";
 import { StreamRenderer } from "./StreamRenderer";
 
 export const VIEW_TYPE_CHAT = "claudian-mobile-chat";
@@ -19,6 +21,7 @@ export class ChatView extends ItemView {
   private streamRenderer!: StreamRenderer;
   private messagesEl!: HTMLElement;
   private inputEl!: HTMLTextAreaElement;
+  private newButton!: HTMLButtonElement;
   private sendButton!: HTMLButtonElement;
   private stopButton!: HTMLButtonElement;
   private isStreaming = false;
@@ -54,7 +57,7 @@ export class ChatView extends ItemView {
     const composer = root.createDiv({ cls: "claudian-mobile-composer" });
     this.inputEl = composer.createEl("textarea", {
       cls: "claudian-mobile-input",
-      attr: { placeholder: "Ask Claudian…", rows: "1" },
+      attr: { rows: "1" },
     });
     this.inputEl.addEventListener("input", () => this.autoResize());
     this.inputEl.addEventListener("keydown", (evt) => {
@@ -65,14 +68,14 @@ export class ChatView extends ItemView {
     });
 
     const buttonRow = composer.createDiv({ cls: "claudian-mobile-composer-buttons" });
-    this.sendButton = buttonRow.createEl("button", {
-      cls: "claudian-mobile-send-button mod-cta",
-      text: "Send",
-    });
+    this.newButton = buttonRow.createEl("button", { cls: "claudian-mobile-new-button" });
+    this.newButton.addEventListener("click", () => void this.handleNewConversation());
+    this.sendButton = buttonRow.createEl("button", { cls: "claudian-mobile-send-button mod-cta" });
     this.sendButton.addEventListener("click", () => void this.handleSend());
-    this.stopButton = buttonRow.createEl("button", { cls: "claudian-mobile-stop-button", text: "Stop" });
+    this.stopButton = buttonRow.createEl("button", { cls: "claudian-mobile-stop-button" });
     this.stopButton.hide();
     this.stopButton.addEventListener("click", () => this.abortController?.abort());
+    this.applyLanguage();
 
     this.messages = await this.plugin.conversationStore.load();
     await this.renderHistory();
@@ -80,6 +83,28 @@ export class ChatView extends ItemView {
 
   async onClose(): Promise<void> {
     this.abortController?.abort();
+  }
+
+  /** Writes the current locale into the composer chrome. */
+  private applyLanguage(): void {
+    const strings = t().chat;
+    this.inputEl.setAttr("placeholder", strings.placeholder);
+    this.newButton.setText(strings.newButton);
+    this.newButton.setAttr("aria-label", strings.newButtonAria);
+    this.sendButton.setText(strings.sendButton);
+    this.stopButton.setText(strings.stopButton);
+  }
+
+  /**
+   * Re-labels the view after the Language setting changes. Already-rendered
+   * tool-call blocks carry localized status text too, so the transcript is
+   * rebuilt as well — except mid-stream, where the live turn owns the DOM.
+   */
+  async refreshLanguage(): Promise<void> {
+    this.applyLanguage();
+    if (this.isStreaming) return;
+    this.messagesEl.empty();
+    await this.renderHistory();
   }
 
   private autoResize(): void {
@@ -124,7 +149,34 @@ export class ChatView extends ItemView {
     this.isStreaming = streaming;
     this.sendButton.toggle(!streaming);
     this.stopButton.toggle(streaming);
+    this.newButton.disabled = streaming;
     this.inputEl.disabled = streaming;
+  }
+
+  /**
+   * Clears the conversation and starts fresh. Blocked mid-stream so an
+   * in-flight turn can't write its "done" messages back over the cleared
+   * state, and confirmed first because the reset also wipes the persisted
+   * copy in the plugin data store.
+   */
+  private async handleNewConversation(): Promise<void> {
+    if (this.isStreaming) return;
+
+    if (this.messages.length > 0) {
+      const confirmed = await confirmAction(this.app, {
+        title: t().chat.confirmNewTitle,
+        message: t().chat.confirmNewMessage,
+        confirmText: t().chat.confirmNewAction,
+      });
+      if (!confirmed) return;
+    }
+
+    this.messages = [];
+    await this.plugin.conversationStore.clear();
+    this.messagesEl.empty();
+    this.inputEl.value = "";
+    this.autoResize();
+    this.inputEl.focus();
   }
 
   private async handleSend(): Promise<void> {
@@ -132,7 +184,7 @@ export class ChatView extends ItemView {
     const text = this.inputEl.value.trim();
     if (!text) return;
     if (!this.plugin.settings.apiKey) {
-      new Notice("Set your Anthropic API key in Claudian Mobile settings first.");
+      new Notice(t().chat.missingApiKey);
       return;
     }
 

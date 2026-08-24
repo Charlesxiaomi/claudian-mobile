@@ -1,0 +1,12 @@
+.claudian-mobile-confirm-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--size-4-2);
+  margin-top: var(--size-4-4);
+}
+
+.claudian-mobile-confirm-buttons button {
+  min-height: 44px;
+  min-width: 88px;
+  border-radius: var(--radius-m);
+}

@@ -13,6 +13,7 @@ A minimal AI writing and knowledge agent for your Obsidian vault. It calls the A
   - `search_vault` — full-text search across the vault
   - `list_files` — list files and folders
 - Tool calls are rendered inline, and edits are shown as a diff before they land.
+- Interface available in English and Simplified Chinese; by default it follows Obsidian's own language.
 - All paths are normalized and confined to the vault; the plugin cannot read or write outside it.
 - Works with any endpoint that implements the Anthropic `/v1/messages` streaming API, so you can point it at a proxy or a compatible third-party gateway.
 
@@ -31,7 +32,7 @@ Your API key is stored in plaintext in `.obsidian/plugins/claudian-mobile/data.j
 
 1. Install the plugin (see below) and enable it.
 2. Open **Settings → Claudian Mobile** and paste your Anthropic API key (`sk-ant-...`). You can create one at [console.anthropic.com](https://console.anthropic.com/).
-3. Optionally adjust the model, base URL, output token limit, tool-iteration cap, and system prompt.
+3. Optionally adjust the interface language, model, base URL, output token limit, tool-iteration cap, and system prompt.
 4. Open the chat with the ribbon icon (bot) or the **Claudian Mobile: Open chat** command.
 
 ## Installation

@@ -1,3 +1,5 @@
+import type { LanguageSetting } from "@/i18n";
+
 export type Role = "user" | "assistant";
 
 export interface TextBlock {
@@ -45,6 +47,7 @@ export interface RegisteredTool {
 }
 
 export interface AgentSettings {
+  language: LanguageSetting;
   apiKey: string;
   baseUrl: string;
   model: string;

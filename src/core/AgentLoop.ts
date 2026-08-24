@@ -1,3 +1,5 @@
+import { t } from "@/i18n";
+
 import { streamMessage } from "./AnthropicClient";
 import type {
   AgentEvent,
@@ -95,7 +97,7 @@ export async function* runAgentLoop(
             break;
           }
           case "error": {
-            const detail = event.error.message || event.error.type || "Unknown API error.";
+            const detail = event.error.message || event.error.type || t().agent.unknownApiError;
             const showType = event.error.type && event.error.type !== detail;
             yield { type: "error", message: `${detail}${showType ? ` (${event.error.type})` : ""}` };
             return;
@@ -167,7 +169,7 @@ export async function* runAgentLoop(
 
   yield {
     type: "error",
-    message: `Stopped after reaching the maximum of ${settings.maxIterations} tool-use iterations.`,
+    message: t().agent.maxIterationsReached(settings.maxIterations),
   };
   yield { type: "done", messages };
 }
