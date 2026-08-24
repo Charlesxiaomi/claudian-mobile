@@ -13,6 +13,8 @@ const settings: AgentSettings = {
   apiKey: "key",
   baseUrl: "https://api.anthropic.com",
   model: "claude-sonnet-5",
+  modelOptions: ["claude-sonnet-5"],
+  effort: "high",
   maxOutputTokens: 100,
   maxIterations: 5,
   systemPrompt: "system",

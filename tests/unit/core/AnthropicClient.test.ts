@@ -23,6 +23,7 @@ const baseReq: StreamRequest = {
   apiKey: "test-key",
   baseUrl: DEFAULT_BASE_URL,
   model: "claude-sonnet-5",
+  effort: "high",
   system: "system prompt",
   messages: [],
   tools: [],
@@ -81,6 +82,30 @@ describe("streamMessage", () => {
     const body = JSON.parse(init?.body as string);
     expect(body.stream).toBe(true);
     expect(body.model).toBe("claude-sonnet-5");
+  });
+
+  it("sends the default high effort as output_config.effort", async () => {
+    const fetchSpy = mockFetch(async () => makeStreamResponse([]));
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    for await (const _ of streamMessage(baseReq)) {
+      // drain
+    }
+
+    const body = JSON.parse(fetchSpy.mock.calls[0][1]?.body as string);
+    expect(body.output_config).toEqual({ effort: "high" });
+  });
+
+  it("sends the chosen reasoning effort as output_config.effort", async () => {
+    const fetchSpy = mockFetch(async () => makeStreamResponse([]));
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    for await (const _ of streamMessage({ ...baseReq, effort: "xhigh" })) {
+      // drain
+    }
+
+    const body = JSON.parse(fetchSpy.mock.calls[0][1]?.body as string);
+    expect(body.output_config).toEqual({ effort: "xhigh" });
   });
 
   it("calls a custom base URL, tolerating a trailing slash", async () => {

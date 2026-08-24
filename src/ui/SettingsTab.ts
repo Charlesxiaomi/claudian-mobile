@@ -1,15 +1,21 @@
 import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
 
 import { DEFAULT_BASE_URL } from "@/core/AnthropicClient";
-import type { AgentSettings } from "@/core/types";
+import type { AgentSettings, EffortLevel } from "@/core/types";
+import { EFFORT_LEVELS } from "@/core/types";
 import { LANGUAGE_NAMES, LANGUAGE_SETTINGS, setLanguage, t } from "@/i18n";
 import type { LanguageSetting } from "@/i18n";
+
+/** Offered by the composer's model button, and as autocomplete on the Model setting. */
+export const MODEL_SUGGESTIONS = ["claude-opus-5", "claude-sonnet-5", "claude-haiku-4-5-20251001"];
 
 export const DEFAULT_SETTINGS: AgentSettings = {
   language: "auto",
   apiKey: "",
   baseUrl: DEFAULT_BASE_URL,
   model: "claude-sonnet-5",
+  modelOptions: [...MODEL_SUGGESTIONS],
+  effort: "high",
   maxOutputTokens: 4096,
   maxIterations: 25,
   systemPrompt:
@@ -18,8 +24,6 @@ export const DEFAULT_SETTINGS: AgentSettings = {
     "Prefer patch_note for small edits and write_note only when replacing a note's full content. " +
     "Reply in the language the user writes in.",
 };
-
-const MODEL_SUGGESTIONS = ["claude-opus-5", "claude-sonnet-5", "claude-haiku-4-5-20251001"];
 
 export interface SettingsHost {
   settings: AgentSettings;
@@ -110,6 +114,30 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
+      .setName(s.modelOptions)
+      .setDesc(s.modelOptionsDesc)
+      .addTextArea((text) => {
+        text.inputEl.rows = 4;
+        text.setValue(this.host.settings.modelOptions.join("\n")).onChange(async (value) => {
+          this.host.settings.modelOptions = parseModelOptions(value);
+          await this.host.saveSettings();
+        });
+      });
+
+    new Setting(containerEl)
+      .setName(s.effort)
+      .setDesc(s.effortDesc)
+      .addDropdown((dropdown) => {
+        for (const level of EFFORT_LEVELS) {
+          dropdown.addOption(level, t().chat.effortNames[level]);
+        }
+        dropdown.setValue(this.host.settings.effort).onChange(async (value) => {
+          this.host.settings.effort = value as EffortLevel;
+          await this.host.saveSettings();
+        });
+      });
+
+    new Setting(containerEl)
       .setName(s.maxOutputTokens)
       .setDesc(s.maxOutputTokensDesc)
       .addText((text) => {
@@ -145,4 +173,14 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
       });
     });
   }
+}
+
+/** One model id per line; blank lines and duplicates are dropped. */
+export function parseModelOptions(raw: string): string[] {
+  const seen = new Set<string>();
+  for (const line of raw.split("\n")) {
+    const trimmed = line.trim();
+    if (trimmed) seen.add(trimmed);
+  }
+  return Array.from(seen);
 }

@@ -13,6 +13,18 @@ export const en: Strings = {
     newButtonAria: "Start a new conversation",
     sendButton: "Send",
     stopButton: "Stop",
+    modelMenuTitle: "Model",
+    modelButtonAria: (model) => `Model: ${model}`,
+    modelUnset: "Model",
+    effortMenuTitle: "Reasoning effort",
+    effortButtonAria: (effort) => `Reasoning effort: ${effort}`,
+    effortNames: {
+      low: "Low",
+      medium: "Medium",
+      high: "High",
+      xhigh: "Extra high",
+      max: "Max",
+    },
     missingApiKey: "Set your Anthropic API key in Claudian Mobile settings first.",
     confirmNewTitle: "New conversation",
     confirmNewMessage: "This clears the current conversation. It cannot be undone.",
@@ -52,6 +64,13 @@ export const en: Strings = {
       `Default: ${defaultUrl}`,
     model: "Model",
     modelDesc: "The model id sent to the API above. Third-party endpoints often use their own model names.",
+    modelOptions: "Model list",
+    modelOptionsDesc:
+      "One model id per line. These are the choices offered by the model button above the composer; " +
+      "picking one there updates the Model setting.",
+    effort: "Reasoning effort",
+    effortDesc:
+      "Sent as output_config.effort, which controls how much the model thinks before answering.",
     maxOutputTokens: "Max output tokens",
     maxOutputTokensDesc: "Upper bound on tokens the model can generate per turn.",
     maxIterations: "Max tool-use iterations",

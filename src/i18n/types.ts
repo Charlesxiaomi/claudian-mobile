@@ -1,3 +1,5 @@
+import type { EffortLevel } from "@/core/types";
+
 /** Languages the UI actually ships translations for. */
 export type Language = "en" | "zh-cn";
 
@@ -26,6 +28,14 @@ export interface Strings {
     newButtonAria: string;
     sendButton: string;
     stopButton: string;
+    modelMenuTitle: string;
+    /** Tooltip on the model button; `model` is the full model id in use. */
+    modelButtonAria: (model: string) => string;
+    /** Shown on the model button when no model id is configured yet. */
+    modelUnset: string;
+    effortMenuTitle: string;
+    effortButtonAria: (effort: string) => string;
+    effortNames: Record<EffortLevel, string>;
     missingApiKey: string;
     confirmNewTitle: string;
     confirmNewMessage: string;
@@ -58,6 +68,10 @@ export interface Strings {
     baseUrlDesc: (defaultUrl: string) => string;
     model: string;
     modelDesc: string;
+    modelOptions: string;
+    modelOptionsDesc: string;
+    effort: string;
+    effortDesc: string;
     maxOutputTokens: string;
     maxOutputTokensDesc: string;
     maxIterations: string;

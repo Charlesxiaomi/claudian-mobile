@@ -47,6 +47,7 @@ export async function* runAgentLoop(
         apiKey: settings.apiKey,
         baseUrl: settings.baseUrl,
         model: settings.model,
+        effort: settings.effort,
         system: settings.systemPrompt,
         messages,
         tools: toolDefinitions,

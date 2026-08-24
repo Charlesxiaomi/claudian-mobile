@@ -32,12 +32,50 @@
   border-radius: var(--radius-m);
 }
 
-/* Sits alone on the left of the row; Send/Stop swap in on the right. */
-.claudian-mobile-new-button {
-  margin-right: auto;
+/* New + the two chips sit on the left; Send/Stop are pushed to the right. */
+.claudian-mobile-send-button,
+.claudian-mobile-stop-button {
+  margin-left: auto;
 }
 
-.claudian-mobile-new-button:disabled {
+/* Model / effort pickers: compact next to the fixed-width New and Send. */
+.claudian-mobile-chip-button {
+  min-height: 44px;
+  min-width: 0;
+  max-width: 40%;
+  padding: 0 var(--size-4-2);
+  border-radius: var(--radius-m);
+  font-size: var(--font-ui-small);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.claudian-mobile-chip-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-2-2);
+}
+
+.claudian-mobile-chip-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.claudian-mobile-chip-icon .svg-icon {
+  width: var(--icon-s);
+  height: var(--icon-s);
+}
+
+/* Only the text half gives way when the row runs out of room. */
+.claudian-mobile-chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.claudian-mobile-new-button:disabled,
+.claudian-mobile-chip-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }

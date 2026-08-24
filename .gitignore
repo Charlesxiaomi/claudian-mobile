@@ -4,3 +4,4 @@ styles.css
 *.log
 .DS_Store
 CLAUDE.md
+.claude/skills/

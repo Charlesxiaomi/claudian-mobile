@@ -46,11 +46,19 @@ export interface RegisteredTool {
   execute: ToolExecutor;
 }
 
+/** Reasoning effort sent as `output_config.effort` on every request. */
+export type EffortLevel = "low" | "medium" | "high" | "xhigh" | "max";
+
+export const EFFORT_LEVELS: EffortLevel[] = ["low", "medium", "high", "xhigh", "max"];
+
 export interface AgentSettings {
   language: LanguageSetting;
   apiKey: string;
   baseUrl: string;
   model: string;
+  /** Candidates offered by the composer's model button. */
+  modelOptions: string[];
+  effort: EffortLevel;
   maxOutputTokens: number;
   maxIterations: number;
   systemPrompt: string;

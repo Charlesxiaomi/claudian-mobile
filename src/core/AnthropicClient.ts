@@ -1,6 +1,6 @@
 import { t } from "@/i18n";
 
-import type { ConversationMessage, StreamEvent, ToolDefinition } from "./types";
+import type { ConversationMessage, EffortLevel, StreamEvent, ToolDefinition } from "./types";
 
 export const DEFAULT_BASE_URL = "https://api.anthropic.com";
 const API_VERSION = "2023-06-01";
@@ -9,6 +9,7 @@ export interface StreamRequest {
   apiKey: string;
   baseUrl: string;
   model: string;
+  effort: EffortLevel;
   system: string;
   messages: ConversationMessage[];
   tools: ToolDefinition[];
@@ -39,6 +40,7 @@ export async function* streamMessage(req: StreamRequest): AsyncGenerator<StreamE
     },
     body: JSON.stringify({
       model: req.model,
+      output_config: { effort: req.effort },
       system: req.system,
       messages: req.messages,
       tools: req.tools.map((t) => ({
