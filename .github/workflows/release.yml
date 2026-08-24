@@ -1,0 +1,52 @@
+name: Release
+
+# Obsidian's community-plugin installer and BRAT both look for a release whose
+# tag is the bare version number (0.1.0, not v0.1.0) and whose assets sit at
+# the top level of the release. Pushing such a tag is the whole trigger.
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Check
+        run: |
+          npm run typecheck
+          npm run lint
+          npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify manifest version matches the tag
+        run: |
+          manifest_version=$(node -p "require('./manifest.json').version")
+          if [ "$manifest_version" != "${{ github.ref_name }}" ]; then
+            echo "manifest.json says $manifest_version but the tag is ${{ github.ref_name }}." >&2
+            echo "Run 'npm version <patch|minor|major>' so both move together." >&2
+            exit 1
+          fi
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --title "${{ github.ref_name }}" \
+            --generate-notes \
+            main.js manifest.json styles.css

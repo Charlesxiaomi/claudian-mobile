@@ -64,6 +64,27 @@ npm run lint
 
 Set `OBSIDIAN_VAULT=/path/to/vault` to have the build copy `main.js`, `manifest.json`, and `styles.css` straight into that vault's plugin folder.
 
+## Releasing
+
+Releases are built by GitHub Actions; the trigger is a version tag.
+
+```bash
+npm version patch   # or minor / major
+git push --follow-tags
+```
+
+`npm version` bumps `package.json`, then a `version` hook syncs `manifest.json`
+and adds the new entry to `versions.json`, so all three land in the version
+commit that npm tags. Tags are bare version numbers (`0.2.0`, no `v` prefix) —
+that is what Obsidian's installer and BRAT expect.
+
+Pushing the tag runs [`.github/workflows/release.yml`](.github/workflows/release.yml):
+it typechecks, lints, tests, builds, verifies the tag matches `manifest.json`,
+and publishes a release with `main.js`, `manifest.json`, and `styles.css`
+attached. Those build outputs are deliberately not committed to the repo — a
+release is the only place they are published, so cloning the repo alone is not
+enough to run the plugin.
+
 ## License
 
 [MIT](LICENSE)

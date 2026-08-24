@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint \"{src,tests}/**/*.ts\"",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "version": "node scripts/version-bump.mjs && git add manifest.json versions.json"
   },
   "keywords": [
     "obsidian",
