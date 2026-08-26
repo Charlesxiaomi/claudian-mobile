@@ -1,4 +1,4 @@
-import { App, Notice, Plugin, PluginSettingTab, Setting } from "obsidian";
+import { AbstractInputSuggest, App, Notice, Plugin, PluginSettingTab, Setting } from "obsidian";
 import type { SettingDefinitionItem, TextComponent } from "obsidian";
 
 import { DEFAULT_BASE_URL, fetchModels, testConnection } from "@/core/AnthropicClient";
@@ -61,11 +61,6 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
 
     return [
       {
-        name: s.language,
-        desc: s.languageDesc,
-        control: { type: "dropdown", key: "language", options: languageOptions },
-      },
-      {
         // Rendered imperatively so the input can be a masked password field,
         // which the declarative controls do not offer.
         name: s.apiKey,
@@ -80,7 +75,7 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
         control: { type: "text", key: "baseUrl", placeholder: DEFAULT_BASE_URL },
       },
       {
-        // Rendered imperatively to keep the model-id datalist suggestions.
+        // Rendered imperatively to attach the model-id suggestion popover.
         name: s.model,
         desc: s.modelDesc,
         render: (setting: Setting) => {
@@ -120,6 +115,11 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
       {
         name: s.systemPrompt,
         control: { type: "textarea", key: "systemPrompt", rows: 6 },
+      },
+      {
+        name: s.language,
+        desc: s.languageDesc,
+        control: { type: "dropdown", key: "language", options: languageOptions },
       },
     ];
   }
@@ -182,22 +182,18 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
       });
   }
 
-  /** Model-id input with datalist suggestions, shared by both rendering paths. */
+  /** Model-id input with suggestion popover, shared by both rendering paths. */
   private configureModelText(text: TextComponent): void {
-    const listId = "claudian-mobile-model-suggestions";
-    const parent = text.inputEl.parentElement ?? text.inputEl;
-    const datalist = parent.createEl("datalist", { attr: { id: listId } });
-    const populate = () => {
-      datalist.empty();
-      for (const model of this.host.settings.modelOptions) {
-        datalist.createEl("option", { attr: { value: model } });
-      }
-    };
-    populate();
-    // Rebuilt on focus so edits to the Model list (or a fetch) show up
-    // without reopening the settings tab.
-    text.inputEl.addEventListener("focus", populate);
-    text.inputEl.setAttr("list", listId);
+    // An Obsidian suggestion popover anchored to the input, instead of a
+    // native <datalist>: Android renders datalist options in a system strip
+    // above the keyboard, far away from the field.
+    const suggest = new ModelSuggest(this.app, text.inputEl, () => this.host.settings.modelOptions);
+    suggest.onSelect(async (value) => {
+      text.setValue(value);
+      this.host.settings.model = value;
+      await this.host.saveSettings();
+      suggest.close();
+    });
 
     text
       .setPlaceholder("deepseek-chat")
@@ -280,23 +276,6 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
     const { containerEl } = this;
     containerEl.empty();
     const s = t().settings;
-
-    new Setting(containerEl)
-      .setName(s.language)
-      .setDesc(s.languageDesc)
-      .addDropdown((dropdown) => {
-        for (const value of LANGUAGE_SETTINGS) {
-          dropdown.addOption(value, value === "auto" ? s.languageAuto : LANGUAGE_NAMES[value]);
-        }
-        dropdown.setValue(this.host.settings.language).onChange(async (value) => {
-          this.host.settings.language = value as LanguageSetting;
-          setLanguage(this.host.settings.language);
-          await this.host.saveSettings();
-          this.host.onLanguageChanged?.();
-          // Redraw so every label below picks up the new locale.
-          this.display();
-        });
-      });
 
     new Setting(containerEl)
       .setName(s.apiKey)
@@ -390,6 +369,50 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
         await this.host.saveSettings();
       });
     });
+
+    new Setting(containerEl)
+      .setName(s.language)
+      .setDesc(s.languageDesc)
+      .addDropdown((dropdown) => {
+        for (const value of LANGUAGE_SETTINGS) {
+          dropdown.addOption(value, value === "auto" ? s.languageAuto : LANGUAGE_NAMES[value]);
+        }
+        dropdown.setValue(this.host.settings.language).onChange(async (value) => {
+          this.host.settings.language = value as LanguageSetting;
+          setLanguage(this.host.settings.language);
+          await this.host.saveSettings();
+          this.host.onLanguageChanged?.();
+          // Redraw so every label picks up the new locale.
+          this.display();
+        });
+      });
+  }
+}
+
+/**
+ * Model-id suggestions anchored to the input as an Obsidian popover.
+ * Reads options lazily so Model-list edits or a fetch show up without
+ * reopening the settings tab.
+ */
+class ModelSuggest extends AbstractInputSuggest<string> {
+  private readonly getOptions: () => string[];
+
+  constructor(app: App, inputEl: HTMLInputElement, getOptions: () => string[]) {
+    super(app, inputEl);
+    this.getOptions = getOptions;
+  }
+
+  protected getSuggestions(query: string): string[] {
+    const options = this.getOptions();
+    const q = query.trim().toLowerCase();
+    // An untouched saved value would filter the list down to itself, which
+    // hides the alternatives — show everything until the user starts editing.
+    if (!q || options.some((m) => m.toLowerCase() === q)) return options;
+    return options.filter((m) => m.toLowerCase().includes(q));
+  }
+
+  renderSuggestion(value: string, el: HTMLElement): void {
+    el.setText(value);
   }
 }
 
