@@ -8,7 +8,7 @@ import { LANGUAGE_NAMES, LANGUAGE_SETTINGS, setLanguage, t } from "@/i18n";
 import type { LanguageSetting } from "@/i18n";
 import { ModelTestModal } from "@/ui/ModelTestModal";
 
-/** Offered by the composer's model button, and as autocomplete on the Model setting. */
+/** Seeds modelOptions on first run; the UI reads settings.modelOptions, not this. */
 export const MODEL_SUGGESTIONS = ["deepseek-chat", "deepseek-reasoner", "claude-opus-5", "claude-sonnet-5", "claude-haiku-4-5-20251001"];
 
 export const DEFAULT_SETTINGS: AgentSettings = {
@@ -187,9 +187,16 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
     const listId = "claudian-mobile-model-suggestions";
     const parent = text.inputEl.parentElement ?? text.inputEl;
     const datalist = parent.createEl("datalist", { attr: { id: listId } });
-    for (const model of MODEL_SUGGESTIONS) {
-      datalist.createEl("option", { attr: { value: model } });
-    }
+    const populate = () => {
+      datalist.empty();
+      for (const model of this.host.settings.modelOptions) {
+        datalist.createEl("option", { attr: { value: model } });
+      }
+    };
+    populate();
+    // Rebuilt on focus so edits to the Model list (or a fetch) show up
+    // without reopening the settings tab.
+    text.inputEl.addEventListener("focus", populate);
     text.inputEl.setAttr("list", listId);
 
     text
