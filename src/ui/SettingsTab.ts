@@ -25,6 +25,7 @@ export const DEFAULT_SETTINGS: AgentSettings = {
     "Use the provided tools to read, search, create, and edit notes on the user's behalf. " +
     "Prefer patch_note for small edits and write_note only when replacing a note's full content. " +
     "Reply in the language the user writes in.",
+  chatZoom: 1,
 };
 
 export interface SettingsHost {

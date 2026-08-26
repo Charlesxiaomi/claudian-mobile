@@ -31,6 +31,9 @@ export class ChatView extends ItemView {
   private stopButton!: HTMLButtonElement;
   private isStreaming = false;
   private abortController: AbortController | null = null;
+  /** Distance between the two fingers when the current pinch began; 0 = not pinching. */
+  private pinchStartDistance = 0;
+  private pinchStartZoom = 1;
 
   constructor(
     leaf: WorkspaceLeaf,
@@ -58,6 +61,8 @@ export class ChatView extends ItemView {
 
     this.messagesEl = root.createDiv({ cls: "claudian-mobile-messages" });
     this.streamRenderer = new StreamRenderer(this.app, this.messagesEl, this);
+    this.applyChatZoom();
+    this.registerPinchZoom();
 
     const composer = root.createDiv({ cls: "claudian-mobile-composer" });
     this.inputEl = composer.createEl("textarea", {
@@ -188,6 +193,55 @@ export class ChatView extends ItemView {
     if (this.isStreaming) return;
     this.messagesEl.empty();
     await this.renderHistory();
+  }
+
+  /**
+   * Two-finger pinch on the transcript scales the message text, since
+   * Obsidian mobile disables the WebView's native pinch zoom outright.
+   * CSS `zoom` (unlike transform: scale) reflows the text to the new size.
+   */
+  private registerPinchZoom(): void {
+    const distance = (touches: TouchList) =>
+      Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+
+    this.registerDomEvent(
+      this.messagesEl,
+      "touchstart",
+      (evt: TouchEvent) => {
+        if (evt.touches.length !== 2) return;
+        this.pinchStartDistance = distance(evt.touches);
+        this.pinchStartZoom = this.plugin.settings.chatZoom;
+      },
+      { passive: true },
+    );
+
+    this.registerDomEvent(
+      this.messagesEl,
+      "touchmove",
+      (evt: TouchEvent) => {
+        if (evt.touches.length !== 2 || this.pinchStartDistance === 0) return;
+        // Without this the browser treats the two fingers as a scroll.
+        evt.preventDefault();
+        this.plugin.settings.chatZoom = clampChatZoom(
+          this.pinchStartZoom * (distance(evt.touches) / this.pinchStartDistance),
+        );
+        this.applyChatZoom();
+      },
+      { passive: false },
+    );
+
+    const endPinch = (evt: TouchEvent) => {
+      if (this.pinchStartDistance === 0 || evt.touches.length >= 2) return;
+      this.pinchStartDistance = 0;
+      void this.plugin.saveSettings();
+    };
+    this.registerDomEvent(this.messagesEl, "touchend", endPinch);
+    this.registerDomEvent(this.messagesEl, "touchcancel", endPinch);
+  }
+
+  private applyChatZoom(): void {
+    const zoom = this.plugin.settings.chatZoom;
+    this.messagesEl.style.setProperty("zoom", zoom === 1 ? "" : String(zoom));
   }
 
   private autoResize(): void {
@@ -338,4 +392,18 @@ export class ChatView extends ItemView {
 /** "claude-haiku-4-5-20251001" -> "haiku-4-5": enough to tell the chips apart. */
 export function shortModelLabel(model: string): string {
   return model.replace(/^claude-/, "").replace(/-\d{8}$/, "");
+}
+
+const CHAT_ZOOM_MIN = 0.6;
+const CHAT_ZOOM_MAX = 2.5;
+
+/**
+ * Clamps a persisted or in-gesture zoom factor; anything unusable (missing in
+ * old data.json, hand-edited garbage) falls back to 1, and near-1 values snap
+ * to exactly 1 so a sloppy pinch can still land back on the default size.
+ */
+export function clampChatZoom(value: unknown): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) return 1;
+  const clamped = Math.min(CHAT_ZOOM_MAX, Math.max(CHAT_ZOOM_MIN, value));
+  return Math.abs(clamped - 1) < 0.05 ? 1 : clamped;
 }

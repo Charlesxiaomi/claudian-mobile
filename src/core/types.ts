@@ -62,6 +62,8 @@ export interface AgentSettings {
   maxOutputTokens: number;
   maxIterations: number;
   systemPrompt: string;
+  /** Transcript zoom factor, adjusted by pinching the chat message list. */
+  chatZoom: number;
 }
 
 // --- Anthropic Messages API streaming event shapes (subset actually used) ---

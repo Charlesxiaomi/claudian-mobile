@@ -5,7 +5,7 @@ import { EFFORT_LEVELS } from "@/core/types";
 import { setLanguage, t } from "@/i18n";
 import { ConversationStore } from "@/store/ConversationStore";
 import { createToolRegistry } from "@/tools";
-import { ChatView, VIEW_TYPE_CHAT } from "@/ui/ChatView";
+import { ChatView, clampChatZoom, VIEW_TYPE_CHAT } from "@/ui/ChatView";
 import { ClaudianMobileSettingsTab, DEFAULT_SETTINGS } from "@/ui/SettingsTab";
 
 export default class ClaudianMobilePlugin extends Plugin {
@@ -83,6 +83,7 @@ export default class ClaudianMobilePlugin extends Plugin {
     if (!EFFORT_LEVELS.includes(this.settings.effort)) {
       this.settings.effort = DEFAULT_SETTINGS.effort;
     }
+    this.settings.chatZoom = clampChatZoom(this.settings.chatZoom);
     setLanguage(this.settings.language);
   }
 
