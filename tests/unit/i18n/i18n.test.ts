@@ -1,3 +1,5 @@
+import { moment } from "obsidian";
+
 import { en } from "@/i18n/en";
 import { detectLanguage, getActiveLanguage, resolveLanguage, setLanguage, t } from "@/i18n";
 import { zhCn } from "@/i18n/zh-cn";
@@ -32,33 +34,33 @@ describe("locale files", () => {
 
 describe("detectLanguage", () => {
   afterEach(() => {
-    window.localStorage.removeItem("language");
+    moment.locale("en");
   });
 
   it("follows Obsidian's own language setting", () => {
-    window.localStorage.setItem("language", "zh");
+    moment.locale("zh-cn");
     expect(detectLanguage()).toBe("zh-cn");
   });
 
   it("does not serve a Simplified UI to Traditional Chinese", () => {
-    window.localStorage.setItem("language", "zh-TW");
+    moment.locale("zh-TW");
     expect(detectLanguage()).toBe("en");
   });
 
   it("falls back to English for locales with no translation", () => {
-    window.localStorage.setItem("language", "ja");
+    moment.locale("ja");
     expect(detectLanguage()).toBe("en");
   });
 });
 
 describe("setLanguage", () => {
   afterEach(() => {
-    window.localStorage.removeItem("language");
+    moment.locale("en");
     setLanguage("en");
   });
 
   it("honours an explicit choice over Obsidian's language", () => {
-    window.localStorage.setItem("language", "zh");
+    moment.locale("zh-cn");
     setLanguage("en");
     expect(getActiveLanguage()).toBe("en");
     expect(t().chat.sendButton).toBe(en.chat.sendButton);
@@ -70,7 +72,7 @@ describe("setLanguage", () => {
   });
 
   it("resolves 'auto' through detection", () => {
-    window.localStorage.setItem("language", "zh");
+    moment.locale("zh-cn");
     expect(resolveLanguage("auto")).toBe("zh-cn");
     setLanguage("auto");
     expect(getActiveLanguage()).toBe("zh-cn");

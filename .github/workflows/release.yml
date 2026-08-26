@@ -10,6 +10,8 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 jobs:
   release:
@@ -41,6 +43,16 @@ jobs:
             echo "Run 'npm version <patch|minor|major>' so both move together." >&2
             exit 1
           fi
+
+      # The community directory's scorecard checks for artifact attestations
+      # on the release assets.
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            main.js
+            manifest.json
+            styles.css
 
       - name: Create release
         env:

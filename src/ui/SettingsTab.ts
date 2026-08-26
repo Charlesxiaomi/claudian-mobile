@@ -1,4 +1,5 @@
 import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
+import type { SettingDefinitionItem, TextComponent } from "obsidian";
 
 import { DEFAULT_BASE_URL } from "@/core/AnthropicClient";
 import type { AgentSettings, EffortLevel } from "@/core/types";
@@ -40,6 +41,155 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
     this.host = host;
   }
 
+  /**
+   * Declarative settings (Obsidian 1.13+): drives rendering and makes every
+   * entry findable through the settings search. Older app versions never
+   * call this and fall back to display() below.
+   */
+  getSettingDefinitions(): SettingDefinitionItem[] {
+    const s = t().settings;
+    const languageOptions: Record<string, string> = {};
+    for (const value of LANGUAGE_SETTINGS) {
+      languageOptions[value] = value === "auto" ? s.languageAuto : LANGUAGE_NAMES[value];
+    }
+    const effortOptions: Record<string, string> = {};
+    for (const level of EFFORT_LEVELS) {
+      effortOptions[level] = t().chat.effortNames[level];
+    }
+
+    return [
+      {
+        name: s.language,
+        desc: s.languageDesc,
+        control: { type: "dropdown", key: "language", options: languageOptions },
+      },
+      {
+        // Rendered imperatively so the input can be a masked password field,
+        // which the declarative controls do not offer.
+        name: s.apiKey,
+        desc: s.apiKeyDesc,
+        render: (setting: Setting) => {
+          setting.addText((text) => this.configureApiKeyText(text));
+        },
+      },
+      {
+        name: s.baseUrl,
+        desc: s.baseUrlDesc(DEFAULT_BASE_URL),
+        control: { type: "text", key: "baseUrl", placeholder: DEFAULT_BASE_URL },
+      },
+      {
+        // Rendered imperatively to keep the model-id datalist suggestions.
+        name: s.model,
+        desc: s.modelDesc,
+        render: (setting: Setting) => {
+          setting.addText((text) => this.configureModelText(text));
+        },
+      },
+      {
+        name: s.modelOptions,
+        desc: s.modelOptionsDesc,
+        control: { type: "textarea", key: "modelOptions", rows: 4 },
+      },
+      {
+        name: s.effort,
+        desc: s.effortDesc,
+        control: { type: "dropdown", key: "effort", options: effortOptions },
+      },
+      {
+        name: s.maxOutputTokens,
+        desc: s.maxOutputTokensDesc,
+        control: { type: "number", key: "maxOutputTokens", min: 1, step: 1 },
+      },
+      {
+        name: s.maxIterations,
+        desc: s.maxIterationsDesc,
+        control: { type: "number", key: "maxIterations", min: 1, step: 1 },
+      },
+      {
+        name: s.systemPrompt,
+        control: { type: "textarea", key: "systemPrompt", rows: 6 },
+      },
+    ];
+  }
+
+  getControlValue(key: string): unknown {
+    if (key === "modelOptions") return this.host.settings.modelOptions.join("\n");
+    return this.host.settings[key as keyof AgentSettings];
+  }
+
+  async setControlValue(key: string, value: unknown): Promise<void> {
+    const settings = this.host.settings;
+    switch (key) {
+      case "language":
+        settings.language = value as LanguageSetting;
+        setLanguage(settings.language);
+        await this.host.saveSettings();
+        this.host.onLanguageChanged?.();
+        // Re-derive the definitions so every label picks up the new locale.
+        this.update();
+        return;
+      case "baseUrl":
+        settings.baseUrl = String(value).trim() || DEFAULT_BASE_URL;
+        break;
+      case "modelOptions":
+        settings.modelOptions = parseModelOptions(String(value));
+        break;
+      case "effort":
+        settings.effort = value as EffortLevel;
+        break;
+      case "maxOutputTokens": {
+        const n = Number(value);
+        if (!Number.isFinite(n) || n <= 0) return;
+        settings.maxOutputTokens = Math.floor(n);
+        break;
+      }
+      case "maxIterations": {
+        const n = Number(value);
+        if (!Number.isFinite(n) || n <= 0) return;
+        settings.maxIterations = Math.floor(n);
+        break;
+      }
+      case "systemPrompt":
+        settings.systemPrompt = String(value);
+        break;
+      default:
+        return;
+    }
+    await this.host.saveSettings();
+  }
+
+  /** Masked API-key input, shared by both rendering paths. */
+  private configureApiKeyText(text: TextComponent): void {
+    text.inputEl.type = "password";
+    text
+      .setPlaceholder("sk-ant-...")
+      .setValue(this.host.settings.apiKey)
+      .onChange(async (value) => {
+        this.host.settings.apiKey = value.trim();
+        await this.host.saveSettings();
+      });
+  }
+
+  /** Model-id input with datalist suggestions, shared by both rendering paths. */
+  private configureModelText(text: TextComponent): void {
+    const listId = "claudian-mobile-model-suggestions";
+    const parent = text.inputEl.parentElement ?? text.inputEl;
+    const datalist = parent.createEl("datalist", { attr: { id: listId } });
+    for (const model of MODEL_SUGGESTIONS) {
+      datalist.createEl("option", { attr: { value: model } });
+    }
+    text.inputEl.setAttr("list", listId);
+
+    text
+      .setPlaceholder("claude-sonnet-5")
+      .setValue(this.host.settings.model)
+      .onChange(async (value) => {
+        this.host.settings.model = value.trim();
+        await this.host.saveSettings();
+      });
+  }
+
+  /** Imperative fallback for Obsidian versions older than 1.13. */
   display(): void {
     const { containerEl } = this;
     containerEl.empty();
@@ -65,16 +215,7 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName(s.apiKey)
       .setDesc(s.apiKeyDesc)
-      .addText((text) => {
-        text.inputEl.type = "password";
-        text
-          .setPlaceholder("sk-ant-...")
-          .setValue(this.host.settings.apiKey)
-          .onChange(async (value) => {
-            this.host.settings.apiKey = value.trim();
-            await this.host.saveSettings();
-          });
-      });
+      .addText((text) => this.configureApiKeyText(text));
 
     new Setting(containerEl)
       .setName(s.baseUrl)
@@ -92,26 +233,7 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
     new Setting(containerEl)
       .setName(s.model)
       .setDesc(s.modelDesc)
-      .addText((text) => {
-        const listId = "claudian-mobile-model-suggestions";
-        const datalist = text.inputEl.ownerDocument.createElement("datalist");
-        datalist.id = listId;
-        for (const model of MODEL_SUGGESTIONS) {
-          const option = text.inputEl.ownerDocument.createElement("option");
-          option.value = model;
-          datalist.appendChild(option);
-        }
-        text.inputEl.after(datalist);
-        text.inputEl.setAttr("list", listId);
-
-        text
-          .setPlaceholder("claude-sonnet-5")
-          .setValue(this.host.settings.model)
-          .onChange(async (value) => {
-            this.host.settings.model = value.trim();
-            await this.host.saveSettings();
-          });
-      });
+      .addText((text) => this.configureModelText(text));
 
     new Setting(containerEl)
       .setName(s.modelOptions)

@@ -1,3 +1,5 @@
+import { moment } from "obsidian";
+
 import { en } from "./en";
 import type { Language, LanguageSetting, Strings } from "./types";
 import { zhCn } from "./zh-cn";
@@ -37,13 +39,13 @@ function matchLanguage(tag: string | null | undefined): Language | null {
 }
 
 /**
- * Obsidian persists the UI language it was switched to under the "language"
- * localStorage key (absent while it is still on English). Wrapped in a
- * try/catch because storage access can throw in restricted WebViews.
+ * Obsidian keeps the global moment locale in sync with its UI language
+ * setting, so this reflects the app language without touching storage.
+ * Wrapped in a try/catch in case a host build ever drops the shim.
  */
 function obsidianLanguage(): string | null {
   try {
-    return window.localStorage.getItem("language");
+    return moment.locale();
   } catch {
     return null;
   }

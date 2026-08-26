@@ -27,3 +27,15 @@ export class TFile {
     this.extension = dot > 0 ? name.slice(dot + 1) : "";
   }
 }
+
+/**
+ * Obsidian re-exports moment and keeps its global locale in sync with the
+ * app's UI language. Tests drive detectLanguage() through this knob.
+ */
+let currentLocale = "en";
+export const moment = {
+  locale(next?: string): string {
+    if (typeof next === "string") currentLocale = next;
+    return currentLocale;
+  },
+};

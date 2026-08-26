@@ -1,7 +1,7 @@
 import { ItemView, Menu, Notice, Platform, setIcon, WorkspaceLeaf } from "obsidian";
 
 import { runAgentLoop } from "@/core/AgentLoop";
-import type { ConversationMessage, EffortLevel } from "@/core/types";
+import type { ConversationMessage } from "@/core/types";
 import { EFFORT_LEVELS } from "@/core/types";
 import { t } from "@/i18n";
 import type ClaudianMobilePlugin from "@/main";
@@ -162,7 +162,7 @@ export class ChatView extends ItemView {
           .setTitle(strings.effortNames[level])
           .setChecked(level === this.plugin.settings.effort)
           .onClick(() => void this.applySettingChange(() => {
-            this.plugin.settings.effort = level as EffortLevel;
+            this.plugin.settings.effort = level;
           })),
       );
     }
@@ -191,8 +191,8 @@ export class ChatView extends ItemView {
   }
 
   private autoResize(): void {
-    this.inputEl.style.height = "auto";
-    this.inputEl.style.height = `${Math.min(this.inputEl.scrollHeight, 160)}px`;
+    this.inputEl.setCssStyles({ height: "auto" });
+    this.inputEl.setCssStyles({ height: `${Math.min(this.inputEl.scrollHeight, 160)}px` });
   }
 
   private async renderHistory(): Promise<void> {

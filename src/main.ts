@@ -26,7 +26,8 @@ export default class ClaudianMobilePlugin extends Plugin {
     // Obsidian reads the command name once, at registration time, so this
     // one only picks up a language change on the next plugin load.
     this.addCommand({
-      id: "open-claudian-mobile-chat",
+      // Obsidian namespaces command ids by plugin id on its own.
+      id: "open-chat",
       name: t().commands.openChat,
       callback: () => void this.activateView(),
     });
@@ -62,12 +63,12 @@ export default class ClaudianMobilePlugin extends Plugin {
     const { workspace } = this.app;
     const existing = workspace.getLeavesOfType(VIEW_TYPE_CHAT)[0];
     if (existing) {
-      workspace.revealLeaf(existing);
+      await workspace.revealLeaf(existing);
       return;
     }
     const leaf = workspace.getRightLeaf(false) ?? workspace.getLeaf(true);
     await leaf.setViewState({ type: VIEW_TYPE_CHAT, active: true });
-    workspace.revealLeaf(leaf);
+    await workspace.revealLeaf(leaf);
   }
 
   private async loadSettings(): Promise<void> {
