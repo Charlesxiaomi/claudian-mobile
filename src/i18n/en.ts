@@ -25,7 +25,7 @@ export const en: Strings = {
       xhigh: "Extra high",
       max: "Max",
     },
-    missingApiKey: "Set your Anthropic API key in Claudian Mobile settings first.",
+    missingApiKey: "Set your API key in Claudian Mobile settings first.",
     confirmNewTitle: "New conversation",
     confirmNewMessage: "This clears the current conversation. It cannot be undone.",
     confirmNewAction: "Start new",
@@ -44,7 +44,7 @@ export const en: Strings = {
   },
   api: {
     error: (status, type, detail) =>
-      `Anthropic API error ${status}${type ? ` (${type})` : ""}${detail ? `: ${detail}` : ""}`,
+      `API error ${status}${type ? ` (${type})` : ""}${detail ? `: ${detail}` : ""}`,
     noDetail: "no further detail provided",
   },
   settings: {
@@ -53,14 +53,14 @@ export const en: Strings = {
       "Language for the Claudian Mobile interface. The ribbon entry and command palette entry pick up " +
       "the change after the plugin is reloaded.",
     languageAuto: "Follow Obsidian",
-    apiKey: "Anthropic API key",
+    apiKey: "API key",
     apiKeyDesc:
       "Stored in plaintext in this device's vault config (.obsidian/plugins/claudian-mobile/data.json). " +
       "Do not use a key you aren't comfortable having on this device, especially if the vault is synced.",
     baseUrl: "Base URL",
     baseUrlDesc: (defaultUrl) =>
-      "The Anthropic Messages API endpoint to call. Change this to point at a third-party or self-hosted " +
-      "gateway that implements the same /v1/messages streaming API (e.g. Kimi, GLM, or a proxy). " +
+      "The Anthropic-compatible Messages API endpoint to call. Point it at any gateway that implements " +
+      "the same /v1/messages streaming API (e.g. Anthropic, DeepSeek, Kimi, GLM, or a proxy). " +
       `Default: ${defaultUrl}`,
     model: "Model",
     modelDesc: "The model id sent to the API above. Third-party endpoints often use their own model names.",
@@ -68,6 +68,24 @@ export const en: Strings = {
     modelOptionsDesc:
       "One model id per line. These are the choices offered by the model button above the composer; " +
       "picking one there updates the Model setting.",
+    fetchModels: "Fetch model list",
+    fetchModelsDesc:
+      "Asks the endpoint above for /v1/models (falling back to the domain root when the path has none) " +
+      "and merges the returned ids into Model list. " +
+      "Nothing is ever removed — an id the endpoint doesn't advertise may still work.",
+    fetchModelsButton: "Fetch",
+    fetchModelsFetching: "Fetching…",
+    fetchModelsResult: (added, total) => `Endpoint returned ${total} model(s); ${added} new added to Model list.`,
+    fetchModelsFailed: (detail) => `Could not fetch the model list: ${detail}`,
+    testConnection: "Test connection",
+    testConnectionDesc:
+      "Sends a real streaming \"hi\" to the endpoint with a model you pick — the same code path chat uses. " +
+      "Passing proves streaming chat works with that model; it says nothing about the other models.",
+    testConnectionButton: "Test",
+    testModalTitle: "Test which model?",
+    testRunning: (model) => `Testing ${model}…`,
+    testSuccess: (model) => `${model} works: the endpoint returned a valid streaming response.`,
+    testFailed: (model, detail) => `${model} failed: ${detail}`,
     effort: "Reasoning effort",
     effortDesc:
       "Sent as output_config.effort, which controls how much the model thinks before answering.",

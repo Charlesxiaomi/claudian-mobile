@@ -70,6 +70,20 @@ export interface Strings {
     modelDesc: string;
     modelOptions: string;
     modelOptionsDesc: string;
+    fetchModels: string;
+    fetchModelsDesc: string;
+    fetchModelsButton: string;
+    fetchModelsFetching: string;
+    /** `added` ids were new and merged in, out of `total` the endpoint returned. */
+    fetchModelsResult: (added: number, total: number) => string;
+    fetchModelsFailed: (detail: string) => string;
+    testConnection: string;
+    testConnectionDesc: string;
+    testConnectionButton: string;
+    testModalTitle: string;
+    testRunning: (model: string) => string;
+    testSuccess: (model: string) => string;
+    testFailed: (model: string, detail: string) => string;
     effort: string;
     effortDesc: string;
     maxOutputTokens: string;

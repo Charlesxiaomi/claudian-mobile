@@ -10,3 +10,29 @@
   min-width: 88px;
   border-radius: var(--radius-m);
 }
+
+.claudian-mobile-test-models {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-2);
+  margin-top: var(--size-4-2);
+}
+
+.claudian-mobile-test-models button {
+  min-height: 44px;
+  border-radius: var(--radius-m);
+}
+
+.claudian-mobile-test-status {
+  margin-top: var(--size-4-3);
+  color: var(--text-muted);
+  word-break: break-word;
+}
+
+.claudian-mobile-test-status.is-success {
+  color: var(--color-green);
+}
+
+.claudian-mobile-test-status.is-failure {
+  color: var(--color-red);
+}

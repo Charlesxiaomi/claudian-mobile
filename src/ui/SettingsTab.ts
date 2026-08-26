@@ -1,20 +1,21 @@
-import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
+import { App, Notice, Plugin, PluginSettingTab, Setting } from "obsidian";
 import type { SettingDefinitionItem, TextComponent } from "obsidian";
 
-import { DEFAULT_BASE_URL } from "@/core/AnthropicClient";
+import { DEFAULT_BASE_URL, fetchModels, testConnection } from "@/core/AnthropicClient";
 import type { AgentSettings, EffortLevel } from "@/core/types";
 import { EFFORT_LEVELS } from "@/core/types";
 import { LANGUAGE_NAMES, LANGUAGE_SETTINGS, setLanguage, t } from "@/i18n";
 import type { LanguageSetting } from "@/i18n";
+import { ModelTestModal } from "@/ui/ModelTestModal";
 
 /** Offered by the composer's model button, and as autocomplete on the Model setting. */
-export const MODEL_SUGGESTIONS = ["claude-opus-5", "claude-sonnet-5", "claude-haiku-4-5-20251001"];
+export const MODEL_SUGGESTIONS = ["deepseek-chat", "deepseek-reasoner", "claude-opus-5", "claude-sonnet-5", "claude-haiku-4-5-20251001"];
 
 export const DEFAULT_SETTINGS: AgentSettings = {
   language: "auto",
   apiKey: "",
   baseUrl: DEFAULT_BASE_URL,
-  model: "claude-sonnet-5",
+  model: "deepseek-chat",
   modelOptions: [...MODEL_SUGGESTIONS],
   effort: "high",
   maxOutputTokens: 4096,
@@ -91,6 +92,16 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
         control: { type: "textarea", key: "modelOptions", rows: 4 },
       },
       {
+        name: s.fetchModels,
+        desc: s.fetchModelsDesc,
+        render: (setting: Setting) => this.configureFetchModelsButton(setting),
+      },
+      {
+        name: s.testConnection,
+        desc: s.testConnectionDesc,
+        render: (setting: Setting) => this.configureTestButton(setting),
+      },
+      {
         name: s.effort,
         desc: s.effortDesc,
         control: { type: "dropdown", key: "effort", options: effortOptions },
@@ -162,7 +173,7 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
   private configureApiKeyText(text: TextComponent): void {
     text.inputEl.type = "password";
     text
-      .setPlaceholder("sk-ant-...")
+      .setPlaceholder("sk-...")
       .setValue(this.host.settings.apiKey)
       .onChange(async (value) => {
         this.host.settings.apiKey = value.trim();
@@ -181,7 +192,7 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
     text.inputEl.setAttr("list", listId);
 
     text
-      .setPlaceholder("claude-sonnet-5")
+      .setPlaceholder("deepseek-chat")
       .setValue(this.host.settings.model)
       .onChange(async (value) => {
         this.host.settings.model = value.trim();
@@ -189,8 +200,75 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
       });
   }
 
+  /**
+   * "Fetch model list" button: merges the endpoint's /v1/models ids into
+   * modelOptions. Merge only — user-entered ids are never removed, since an
+   * id the endpoint doesn't advertise may still work (see testConnection).
+   */
+  private configureFetchModelsButton(setting: Setting): void {
+    setting.addButton((button) => {
+      button.setButtonText(t().settings.fetchModelsButton).onClick(async () => {
+        const settings = this.host.settings;
+        if (!settings.apiKey) {
+          new Notice(t().chat.missingApiKey);
+          return;
+        }
+        button.setDisabled(true).setButtonText(t().settings.fetchModelsFetching);
+        try {
+          const ids = await fetchModels({ apiKey: settings.apiKey, baseUrl: settings.baseUrl });
+          const before = settings.modelOptions.length;
+          settings.modelOptions = mergeModelOptions(settings.modelOptions, ids);
+          await this.host.saveSettings();
+          new Notice(t().settings.fetchModelsResult(settings.modelOptions.length - before, ids.length));
+          // Redraw so the Model list textarea shows the merged ids.
+          this.refresh();
+        } catch (err) {
+          new Notice(t().settings.fetchModelsFailed(err instanceof Error ? err.message : String(err)));
+        } finally {
+          button.setDisabled(false).setButtonText(t().settings.fetchModelsButton);
+        }
+      });
+    });
+  }
+
+  /** "Test connection" button: picks a model, then really streams a "hi". */
+  private configureTestButton(setting: Setting): void {
+    setting.addButton((button) => {
+      button.setButtonText(t().settings.testConnectionButton).onClick(() => {
+        const settings = this.host.settings;
+        if (!settings.apiKey) {
+          new Notice(t().chat.missingApiKey);
+          return;
+        }
+        const current = settings.model.trim();
+        const models = mergeModelOptions(current ? [current] : [], settings.modelOptions);
+        if (models.length === 0) {
+          new Notice(t().chat.modelUnset);
+          return;
+        }
+        new ModelTestModal(this.app, models, (model) =>
+          testConnection({
+            apiKey: settings.apiKey,
+            baseUrl: settings.baseUrl,
+            model,
+            effort: settings.effort,
+          }),
+        ).open();
+      });
+    });
+  }
+
+  /** Redraws whichever rendering path is active. */
+  private refresh(): void {
+    if (this.usingFallback) this.display();
+    else this.update();
+  }
+
+  private usingFallback = false;
+
   /** Imperative fallback for Obsidian versions older than 1.13. */
   display(): void {
+    this.usingFallback = true;
     const { containerEl } = this;
     containerEl.empty();
     const s = t().settings;
@@ -247,6 +325,16 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
       });
 
     new Setting(containerEl)
+      .setName(s.fetchModels)
+      .setDesc(s.fetchModelsDesc)
+      .then((setting) => this.configureFetchModelsButton(setting));
+
+    new Setting(containerEl)
+      .setName(s.testConnection)
+      .setDesc(s.testConnectionDesc)
+      .then((setting) => this.configureTestButton(setting));
+
+    new Setting(containerEl)
       .setName(s.effort)
       .setDesc(s.effortDesc)
       .addDropdown((dropdown) => {
@@ -295,6 +383,20 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
       });
     });
   }
+}
+
+/** Appends ids from `fetched` that aren't already in `existing`; never removes. */
+export function mergeModelOptions(existing: string[], fetched: string[]): string[] {
+  const seen = new Set(existing);
+  const merged = [...existing];
+  for (const id of fetched) {
+    const trimmed = id.trim();
+    if (trimmed && !seen.has(trimmed)) {
+      seen.add(trimmed);
+      merged.push(trimmed);
+    }
+  }
+  return merged;
 }
 
 /** One model id per line; blank lines and duplicates are dropped. */
