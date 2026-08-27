@@ -94,5 +94,18 @@ export const en: Strings = {
     maxIterations: "Max tool-use iterations",
     maxIterationsDesc: "Safety cap on how many tool-call round-trips a single reply can make.",
     systemPrompt: "System prompt",
+    feishu: "Feishu",
+    feishuDescConnected: (name) => (name ? `Connected as ${name}. ` : "Connected. ") + "Chat can search and read your Feishu cloud documents.",
+    feishuDescDisconnected:
+      "Connect your Feishu account so chat can search and read your Feishu cloud documents. " +
+      "A personal Feishu app is created automatically on first connect; you will confirm twice in the browser. " +
+      "Credentials and tokens are stored in plaintext in this plugin's data.json, like the API key above.",
+    feishuConnectButton: "Connect",
+    feishuDisconnectButton: "Disconnect",
+    feishuStageRegistering: "Opened the Feishu app-creation page in your browser — confirm there, then come back.",
+    feishuStageAuthorizing: "Opened the Feishu authorization page in your browser — approve there, then come back.",
+    feishuConnected: (name) => (name ? `Feishu connected as ${name}.` : "Feishu connected."),
+    feishuConnectFailed: (detail) => `Feishu connection failed: ${detail}`,
+    feishuDisconnected: "Feishu disconnected.",
   },
 };

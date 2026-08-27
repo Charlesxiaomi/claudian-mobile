@@ -1,3 +1,4 @@
+import type { FeishuAuth } from "@/feishu/types";
 import type { LanguageSetting } from "@/i18n";
 
 export type Role = "user" | "assistant";
@@ -64,6 +65,8 @@ export interface AgentSettings {
   systemPrompt: string;
   /** Transcript zoom factor, adjusted by pinching the chat message list. */
   chatZoom: number;
+  /** Feishu connection state; null until the user connects. */
+  feishu: FeishuAuth | null;
 }
 
 // --- Anthropic Messages API streaming event shapes (subset actually used) ---

@@ -4,6 +4,7 @@ import type { SettingDefinitionItem, TextComponent } from "obsidian";
 import { DEFAULT_BASE_URL, fetchModels, testConnection } from "@/core/AnthropicClient";
 import type { AgentSettings, EffortLevel } from "@/core/types";
 import { EFFORT_LEVELS } from "@/core/types";
+import type { FeishuService } from "@/feishu/FeishuService";
 import { LANGUAGE_NAMES, LANGUAGE_SETTINGS, setLanguage, t } from "@/i18n";
 import type { LanguageSetting } from "@/i18n";
 import { ModelTestModal } from "@/ui/ModelTestModal";
@@ -26,10 +27,12 @@ export const DEFAULT_SETTINGS: AgentSettings = {
     "Prefer patch_note for small edits and write_note only when replacing a note's full content. " +
     "Reply in the language the user writes in.",
   chatZoom: 1,
+  feishu: null,
 };
 
 export interface SettingsHost {
   settings: AgentSettings;
+  feishu: FeishuService;
   saveSettings(): Promise<void>;
   /** Lets the plugin re-label anything already on screen after a language switch. */
   onLanguageChanged?(): void;
@@ -125,6 +128,13 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
       {
         name: s.systemPrompt,
         control: { type: "textarea", key: "systemPrompt", rows: 6 },
+      },
+      {
+        // Static desc keeps the entry findable via settings search; the
+        // render callback swaps in the live connection status.
+        name: s.feishu,
+        desc: s.feishuDescDisconnected,
+        render: (setting: Setting) => this.configureFeishuSetting(setting),
       },
       {
         name: s.language,
@@ -272,6 +282,51 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
     });
   }
 
+  /**
+   * Feishu connection row: status in the description, a Connect button that
+   * runs the whole registration + device-code flow (two browser confirms),
+   * or a Disconnect button when a session exists.
+   */
+  private configureFeishuSetting(setting: Setting): void {
+    const s = t().settings;
+    const feishu = this.host.feishu;
+    setting.setDesc(feishu.isConnected() ? s.feishuDescConnected(feishu.connectedUserName()) : s.feishuDescDisconnected);
+    if (feishu.isConnected()) {
+      setting.addButton((button) => {
+        button.setButtonText(s.feishuDisconnectButton).onClick(async () => {
+          await feishu.disconnect();
+          new Notice(s.feishuDisconnected);
+          this.refresh();
+        });
+      });
+      return;
+    }
+    setting.addButton((button) => {
+      button
+        .setCta()
+        .setButtonText(s.feishuConnectButton)
+        .onClick(async () => {
+          button.setDisabled(true);
+          try {
+            await feishu.connect({
+              openUrl: (url) => {
+                window.open(url);
+              },
+              // Long-lived notices: the user is being bounced to a browser
+              // and needs the hint to still be there when they come back.
+              onStage: (stage) => new Notice(stage === "registering" ? s.feishuStageRegistering : s.feishuStageAuthorizing, 15000),
+            });
+            new Notice(s.feishuConnected(feishu.connectedUserName()));
+          } catch (err) {
+            new Notice(s.feishuConnectFailed(err instanceof Error ? err.message : String(err)));
+          } finally {
+            button.setDisabled(false);
+            this.refresh();
+          }
+        });
+    });
+  }
+
   /** Redraws whichever rendering path is active. */
   private refresh(): void {
     if (this.usingFallback) this.display();
@@ -379,6 +434,8 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
         await this.host.saveSettings();
       });
     });
+
+    new Setting(containerEl).setName(s.feishu).then((setting) => this.configureFeishuSetting(setting));
 
     new Setting(containerEl)
       .setName(s.language)

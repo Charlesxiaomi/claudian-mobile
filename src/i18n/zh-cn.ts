@@ -88,5 +88,18 @@ export const zhCn: Strings = {
     maxIterations: "工具调用最大轮次",
     maxIterationsDesc: "单次回复最多可以进行多少轮工具调用的安全上限。",
     systemPrompt: "系统提示词",
+    feishu: "飞书",
+    feishuDescConnected: (name) => (name ? `已连接（${name}）。` : "已连接。") + "对话中可以搜索并阅读你的飞书云文档。",
+    feishuDescDisconnected:
+      "连接飞书账号后，对话中即可搜索并阅读你的飞书云文档。" +
+      "首次连接会自动创建一个个人飞书应用，过程中需要在浏览器里确认两次。" +
+      "应用凭证与令牌和上方 API 密钥一样，以明文保存在本插件的 data.json 里。",
+    feishuConnectButton: "连接",
+    feishuDisconnectButton: "断开",
+    feishuStageRegistering: "已在浏览器中打开飞书创建应用页面，请确认后回到这里。",
+    feishuStageAuthorizing: "已在浏览器中打开飞书授权页面，请同意授权后回到这里。",
+    feishuConnected: (name) => (name ? `飞书已连接（${name}）。` : "飞书已连接。"),
+    feishuConnectFailed: (detail) => `飞书连接失败：${detail}`,
+    feishuDisconnected: "已断开飞书连接。",
   },
 };

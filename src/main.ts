@@ -2,6 +2,7 @@ import { Plugin, WorkspaceLeaf } from "obsidian";
 
 import type { AgentSettings, RegisteredTool } from "@/core/types";
 import { EFFORT_LEVELS } from "@/core/types";
+import { FeishuService } from "@/feishu/FeishuService";
 import { setLanguage, t } from "@/i18n";
 import { ConversationStore } from "@/store/ConversationStore";
 import { createToolRegistry } from "@/tools";
@@ -12,12 +13,20 @@ export default class ClaudianMobilePlugin extends Plugin {
   settings: AgentSettings = DEFAULT_SETTINGS;
   tools!: Map<string, RegisteredTool>;
   conversationStore!: ConversationStore;
+  feishu!: FeishuService;
   private ribbonIconEl: HTMLElement | null = null;
 
   async onload(): Promise<void> {
     await this.loadSettings();
 
-    this.tools = createToolRegistry(this.app.vault);
+    this.feishu = new FeishuService(
+      () => this.settings.feishu,
+      async (auth) => {
+        this.settings.feishu = auth;
+        await this.saveSettings();
+      },
+    );
+    this.tools = createToolRegistry(this.app.vault, this.feishu);
     this.conversationStore = new ConversationStore(this, () => this.settings);
 
     this.registerView(VIEW_TYPE_CHAT, (leaf: WorkspaceLeaf) => new ChatView(leaf, this));
@@ -84,6 +93,12 @@ export default class ClaudianMobilePlugin extends Plugin {
       this.settings.effort = DEFAULT_SETTINGS.effort;
     }
     this.settings.chatZoom = clampChatZoom(this.settings.chatZoom);
+    // A hand-edited data.json can hold a malformed feishu block; treat it
+    // as disconnected rather than letting bad shapes reach the OAuth layer.
+    const feishu = this.settings.feishu;
+    if (feishu && (typeof feishu.clientId !== "string" || typeof feishu.refreshToken !== "string")) {
+      this.settings.feishu = null;
+    }
     setLanguage(this.settings.language);
   }
 

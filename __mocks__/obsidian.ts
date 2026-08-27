@@ -39,3 +39,10 @@ export const moment = {
     return currentLocale;
   },
 };
+
+/**
+ * Stand-in for Obsidian's HTTP bridge. Tests drive it with
+ * (requestUrl as jest.Mock).mockResolvedValue({ status, text }); the default
+ * rejects so a test that forgot to stub it fails loudly instead of hanging.
+ */
+export const requestUrl = jest.fn(() => Promise.reject(new Error("requestUrl not mocked")));

@@ -1,14 +1,17 @@
 import type { Vault } from "obsidian";
 
 import type { RegisteredTool } from "@/core/types";
+import type { FeishuService } from "@/feishu/FeishuService";
 import { createCreateNoteTool } from "./createNote";
+import { createFeishuReadDocTool } from "./feishuReadDoc";
+import { createFeishuSearchDocsTool } from "./feishuSearchDocs";
 import { createListFilesTool } from "./listFiles";
 import { createPatchNoteTool } from "./patchNote";
 import { createReadNoteTool } from "./readNote";
 import { createSearchVaultTool } from "./searchVault";
 import { createWriteNoteTool } from "./writeNote";
 
-export function createToolRegistry(vault: Vault): Map<string, RegisteredTool> {
+export function createToolRegistry(vault: Vault, feishu: FeishuService): Map<string, RegisteredTool> {
   const tools = [
     createReadNoteTool(vault),
     createWriteNoteTool(vault),
@@ -16,6 +19,10 @@ export function createToolRegistry(vault: Vault): Map<string, RegisteredTool> {
     createCreateNoteTool(vault),
     createSearchVaultTool(vault),
     createListFilesTool(vault),
+    // Always registered; they answer with a "connect Feishu first" error
+    // until the user has connected, so the registry never needs rebuilding.
+    createFeishuReadDocTool(feishu),
+    createFeishuSearchDocsTool(feishu),
   ];
   return new Map(tools.map((tool) => [tool.definition.name, tool]));
 }

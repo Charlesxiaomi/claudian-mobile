@@ -92,5 +92,18 @@ export interface Strings {
     maxIterations: string;
     maxIterationsDesc: string;
     systemPrompt: string;
+    feishu: string;
+    /** `name` may be empty when the profile fetch failed; still connected. */
+    feishuDescConnected: (name: string) => string;
+    feishuDescDisconnected: string;
+    feishuConnectButton: string;
+    feishuDisconnectButton: string;
+    /** Notice shown when the app-creation confirmation page is opened. */
+    feishuStageRegistering: string;
+    /** Notice shown when the authorization confirmation page is opened. */
+    feishuStageAuthorizing: string;
+    feishuConnected: (name: string) => string;
+    feishuConnectFailed: (detail: string) => string;
+    feishuDisconnected: string;
   };
 }
