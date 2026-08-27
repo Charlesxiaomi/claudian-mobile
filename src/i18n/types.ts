@@ -24,10 +24,11 @@ export interface Strings {
   };
   chat: {
     placeholder: string;
-    newButton: string;
+    /** Serif greeting shown centered in the transcript while it is empty. */
+    welcome: string;
     newButtonAria: string;
-    sendButton: string;
-    stopButton: string;
+    sendButtonAria: string;
+    stopButtonAria: string;
     modelMenuTitle: string;
     /** Tooltip on the model button; `model` is the full model id in use. */
     modelButtonAria: (model: string) => string;

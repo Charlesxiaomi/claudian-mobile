@@ -1,15 +1,58 @@
 .claudian-mobile-view {
+  /* Claudian brand tokens (desktop Claudian's --claudian-brand). */
+  --cm-brand: #d97757;
+  --cm-brand-rgb: 217, 119, 87;
   display: flex;
   flex-direction: column;
   height: 100%;
   padding: 0;
+  overflow: hidden;
 }
 
 .claudian-mobile-messages {
   flex: 1 1 auto;
   overflow-y: auto;
-  padding: var(--size-4-3);
+  padding: var(--size-4-3) var(--size-4-3) 0;
   display: flex;
   flex-direction: column;
   gap: var(--size-4-3);
+}
+
+.claudian-mobile-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.claudian-mobile-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.claudian-mobile-messages::-webkit-scrollbar-thumb {
+  background: var(--background-modifier-border);
+  border-radius: 3px;
+}
+
+/* Welcome greeting - claude.ai style, shown while the transcript is empty. */
+.claudian-mobile-welcome {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--size-4-5);
+  min-height: 160px;
+}
+
+.claudian-mobile-welcome-text {
+  font-family: "Copernicus", "Tiempos Headline", "Tiempos", Georgia, "Times New Roman", serif;
+  font-size: 24px;
+  font-weight: 300;
+  color: var(--text-muted);
+  letter-spacing: -0.01em;
+}
+
+@keyframes claudian-mobile-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

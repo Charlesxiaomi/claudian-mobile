@@ -1,81 +1,162 @@
+/* Composer: one bordered card (textarea + toolbar), like desktop Claudian's
+   input wrapper, floating on the page background with no separator line. */
 .claudian-mobile-composer {
   flex: 0 0 auto;
-  border-top: 1px solid var(--background-modifier-border);
-  padding: var(--size-4-3);
-  display: flex;
-  flex-direction: column;
-  gap: var(--size-4-2);
+  padding: var(--size-4-2) var(--size-4-3)
+    calc(var(--size-4-2) + env(safe-area-inset-bottom, 0px));
 }
 
-.claudian-mobile-input {
+.claudian-mobile-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: var(--background-primary);
+}
+
+.claudian-mobile-input-wrapper:focus-within {
+  border-color: rgba(var(--cm-brand-rgb), 0.5);
+}
+
+.claudian-mobile-view textarea.claudian-mobile-input {
   width: 100%;
   min-height: 44px;
   max-height: 160px;
   resize: none;
-  border-radius: var(--radius-m);
-  padding: var(--size-4-2);
+  border: none;
+  border-radius: 8px 8px 0 0;
+  background: transparent;
+  box-shadow: none;
+  padding: var(--size-4-2) var(--size-4-3);
+  font-family: inherit;
   font-size: var(--font-ui-medium);
+  line-height: 1.4;
 }
 
-.claudian-mobile-composer-buttons {
+.claudian-mobile-view textarea.claudian-mobile-input:hover,
+.claudian-mobile-view textarea.claudian-mobile-input:focus {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+}
+
+.claudian-mobile-view textarea.claudian-mobile-input::placeholder {
+  color: var(--text-muted);
+}
+
+.claudian-mobile-input-toolbar {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--size-4-2);
-}
-
-.claudian-mobile-new-button,
-.claudian-mobile-send-button,
-.claudian-mobile-stop-button {
-  min-height: 44px;
-  min-width: 88px;
-  border-radius: var(--radius-m);
-}
-
-/* New + the two chips sit on the left; Send/Stop are pushed to the right. */
-.claudian-mobile-send-button,
-.claudian-mobile-stop-button {
-  margin-left: auto;
-}
-
-/* Model / effort pickers: compact next to the fixed-width New and Send. */
-.claudian-mobile-chip-button {
-  min-height: 44px;
-  min-width: 0;
-  max-width: 40%;
-  padding: 0 var(--size-4-2);
-  border-radius: var(--radius-m);
-  font-size: var(--font-ui-small);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.claudian-mobile-chip-button {
-  display: inline-flex;
   align-items: center;
   gap: var(--size-2-2);
+  padding: 0 var(--size-4-1) var(--size-4-1) var(--size-4-1);
+  min-width: 0;
 }
 
-.claudian-mobile-chip-icon {
-  display: inline-flex;
+/* Quiet icon button (new conversation). */
+.claudian-mobile-view button.claudian-mobile-icon-button {
   flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-muted);
 }
 
-.claudian-mobile-chip-icon .svg-icon {
-  width: var(--icon-s);
-  height: var(--icon-s);
+.claudian-mobile-view button.claudian-mobile-icon-button:active {
+  color: var(--text-normal);
+  background: var(--background-modifier-hover);
 }
 
-/* Only the text half gives way when the row runs out of room. */
+.claudian-mobile-view button.claudian-mobile-icon-button .svg-icon {
+  width: var(--icon-m);
+  height: var(--icon-m);
+}
+
+/* Model / effort pickers: quiet brand-colored text chips, desktop-Claudian
+   style, sized up slightly for touch. */
+.claudian-mobile-view button.claudian-mobile-chip-button {
+  flex: 0 1 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-2-1);
+  min-width: 0;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 var(--size-4-2);
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--cm-brand);
+  font-size: var(--font-ui-small);
+  font-weight: 500;
+}
+
+.claudian-mobile-view button.claudian-mobile-chip-button:active {
+  background: rgba(var(--cm-brand-rgb), 0.15);
+}
+
 .claudian-mobile-chip-label {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.claudian-mobile-new-button:disabled,
-.claudian-mobile-chip-button:disabled {
+.claudian-mobile-chip-chevron {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--text-faint);
+}
+
+.claudian-mobile-chip-chevron .svg-icon {
+  width: 12px;
+  height: 12px;
+}
+
+/* Send / stop: compact round brand-colored action at the end of the row. */
+.claudian-mobile-view button.claudian-mobile-send-button,
+.claudian-mobile-view button.claudian-mobile-stop-button {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  margin-left: auto;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--cm-brand);
+  box-shadow: none;
+  color: white;
+}
+
+.claudian-mobile-view button.claudian-mobile-send-button:active,
+.claudian-mobile-view button.claudian-mobile-stop-button:active {
+  background: rgba(var(--cm-brand-rgb), 0.8);
+}
+
+.claudian-mobile-view button.claudian-mobile-send-button .svg-icon {
+  width: var(--icon-m);
+  height: var(--icon-m);
+}
+
+.claudian-mobile-view button.claudian-mobile-stop-button .svg-icon {
+  width: var(--icon-s);
+  height: var(--icon-s);
+  fill: currentColor;
+}
+
+.claudian-mobile-view button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
