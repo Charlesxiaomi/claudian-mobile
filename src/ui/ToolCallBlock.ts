@@ -49,7 +49,9 @@ export class ToolCallBlockView {
     setIcon(iconEl, iconForTool(name));
     header.createSpan({ cls: "claudian-mobile-tool-call-name", text: name });
     this.summaryEl = header.createSpan({ cls: "claudian-mobile-tool-call-summary" });
-    this.statusEl = header.createSpan({ cls: "claudian-mobile-tool-call-status", text: t().toolCall.running });
+    this.statusEl = header.createSpan({ cls: "claudian-mobile-tool-call-status is-running" });
+    setIcon(this.statusEl, "loader-2");
+    this.statusEl.setAttr("aria-label", t().toolCall.running);
 
     this.bodyEl = this.el.createDiv({ cls: "claudian-mobile-tool-call-body" });
     this.bodyEl.hide();
@@ -95,8 +97,12 @@ export class ToolCallBlockView {
   }
 
   complete(result: { content: string; isError?: boolean }): void {
-    this.statusEl.setText(result.isError ? t().toolCall.failed : t().toolCall.done);
-    this.statusEl.toggleClass("claudian-mobile-tool-call-error", Boolean(result.isError));
+    const failed = Boolean(result.isError);
+    this.statusEl.removeClass("is-running");
+    this.statusEl.toggleClass("is-error", failed);
+    this.statusEl.toggleClass("is-done", !failed);
+    setIcon(this.statusEl, failed ? "x" : "check");
+    this.statusEl.setAttr("aria-label", failed ? t().toolCall.failed : t().toolCall.done);
     this.resultEl.setText(result.content);
   }
 }

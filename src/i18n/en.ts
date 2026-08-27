@@ -9,10 +9,10 @@ export const en: Strings = {
   },
   chat: {
     placeholder: "Ask Claudian…",
-    newButton: "New",
+    welcome: "What can I help with?",
     newButtonAria: "Start a new conversation",
-    sendButton: "Send",
-    stopButton: "Stop",
+    sendButtonAria: "Send",
+    stopButtonAria: "Stop",
     modelMenuTitle: "Model",
     modelButtonAria: (model) => `Model: ${model}`,
     modelUnset: "Model",

@@ -21,6 +21,7 @@ export class ChatView extends ItemView {
   private messages: ConversationMessage[] = [];
   private streamRenderer!: StreamRenderer;
   private messagesEl!: HTMLElement;
+  private welcomeEl: HTMLElement | null = null;
   private inputEl!: HTMLTextAreaElement;
   private newButton!: HTMLButtonElement;
   private modelButton!: HTMLButtonElement;
@@ -64,8 +65,13 @@ export class ChatView extends ItemView {
     this.applyChatZoom();
     this.registerPinchZoom();
 
+    // Claudian-style composer: a single bordered card holding the borderless
+    // textarea and, below it, one toolbar row of quiet controls. Desktop
+    // Claudian splits these across a nav row and a toolbar; on a phone the
+    // vertical space matters more, so everything folds into one row.
     const composer = root.createDiv({ cls: "claudian-mobile-composer" });
-    this.inputEl = composer.createEl("textarea", {
+    const wrapper = composer.createDiv({ cls: "claudian-mobile-input-wrapper" });
+    this.inputEl = wrapper.createEl("textarea", {
       cls: "claudian-mobile-input",
       attr: { rows: "1" },
     });
@@ -77,26 +83,31 @@ export class ChatView extends ItemView {
       }
     });
 
-    const buttonRow = composer.createDiv({ cls: "claudian-mobile-composer-buttons" });
-    this.newButton = buttonRow.createEl("button", { cls: "claudian-mobile-new-button" });
+    const toolbar = wrapper.createDiv({ cls: "claudian-mobile-input-toolbar" });
+    // square-pen, not plus: a "+" here reads as "attach", which this is not.
+    this.newButton = toolbar.createEl("button", { cls: "claudian-mobile-icon-button" });
+    setIcon(this.newButton, "square-pen");
     this.newButton.addEventListener("click", () => void this.handleNewConversation());
-    this.modelButton = buttonRow.createEl("button", { cls: "claudian-mobile-chip-button" });
-    setIcon(this.modelButton.createSpan({ cls: "claudian-mobile-chip-icon" }), "bot");
+    this.modelButton = toolbar.createEl("button", { cls: "claudian-mobile-chip-button" });
     this.modelLabelEl = this.modelButton.createSpan({ cls: "claudian-mobile-chip-label" });
+    setIcon(this.modelButton.createSpan({ cls: "claudian-mobile-chip-chevron" }), "chevron-down");
     this.modelButton.addEventListener("click", (evt) => this.openModelMenu(evt));
-    this.effortButton = buttonRow.createEl("button", { cls: "claudian-mobile-chip-button" });
-    setIcon(this.effortButton.createSpan({ cls: "claudian-mobile-chip-icon" }), "zap");
+    this.effortButton = toolbar.createEl("button", { cls: "claudian-mobile-chip-button" });
     this.effortLabelEl = this.effortButton.createSpan({ cls: "claudian-mobile-chip-label" });
+    setIcon(this.effortButton.createSpan({ cls: "claudian-mobile-chip-chevron" }), "chevron-down");
     this.effortButton.addEventListener("click", (evt) => this.openEffortMenu(evt));
-    this.sendButton = buttonRow.createEl("button", { cls: "claudian-mobile-send-button mod-cta" });
+    this.sendButton = toolbar.createEl("button", { cls: "claudian-mobile-send-button" });
+    setIcon(this.sendButton, "arrow-up");
     this.sendButton.addEventListener("click", () => void this.handleSend());
-    this.stopButton = buttonRow.createEl("button", { cls: "claudian-mobile-stop-button" });
+    this.stopButton = toolbar.createEl("button", { cls: "claudian-mobile-stop-button" });
+    setIcon(this.stopButton, "square");
     this.stopButton.hide();
     this.stopButton.addEventListener("click", () => this.abortController?.abort());
     this.applyLanguage();
 
     this.messages = await this.plugin.conversationStore.load();
     await this.renderHistory();
+    this.updateWelcome();
   }
 
   async onClose(): Promise<void> {
@@ -107,11 +118,25 @@ export class ChatView extends ItemView {
   private applyLanguage(): void {
     const strings = t().chat;
     this.inputEl.setAttr("placeholder", strings.placeholder);
-    this.newButton.setText(strings.newButton);
     this.newButton.setAttr("aria-label", strings.newButtonAria);
-    this.sendButton.setText(strings.sendButton);
-    this.stopButton.setText(strings.stopButton);
+    this.sendButton.setAttr("aria-label", strings.sendButtonAria);
+    this.stopButton.setAttr("aria-label", strings.stopButtonAria);
     this.refreshComposerState();
+  }
+
+  /**
+   * Keeps the claude.ai-style serif greeting in the transcript while the
+   * conversation is empty, and drops it as soon as the first message lands.
+   */
+  private updateWelcome(): void {
+    const empty = this.messages.length === 0;
+    if (empty && !this.welcomeEl) {
+      this.welcomeEl = this.messagesEl.createDiv({ cls: "claudian-mobile-welcome" });
+      this.welcomeEl.createDiv({ cls: "claudian-mobile-welcome-text", text: t().chat.welcome });
+    } else if (!empty && this.welcomeEl) {
+      this.welcomeEl.remove();
+      this.welcomeEl = null;
+    }
   }
 
   /**
@@ -192,7 +217,9 @@ export class ChatView extends ItemView {
     this.applyLanguage();
     if (this.isStreaming) return;
     this.messagesEl.empty();
+    this.welcomeEl = null;
     await this.renderHistory();
+    this.updateWelcome();
   }
 
   /**
@@ -315,6 +342,8 @@ export class ChatView extends ItemView {
     this.messages = [];
     await this.plugin.conversationStore.clear();
     this.messagesEl.empty();
+    this.welcomeEl = null;
+    this.updateWelcome();
     this.inputEl.value = "";
     this.autoResize();
     this.inputEl.focus();
@@ -343,6 +372,7 @@ export class ChatView extends ItemView {
     } else {
       this.messages.push({ role: "user", content: [{ type: "text", text }] });
     }
+    this.updateWelcome();
     this.streamRenderer.renderUserMessage(text);
     await this.plugin.conversationStore.save(this.messages);
 

@@ -1,64 +1,106 @@
+/* Tool call: a slim borderless row (icon + mono name + summary + status),
+   expanding into an indented block behind a 2px start border - the same
+   form desktop Claudian uses, with taller touch targets for mobile. */
 .claudian-mobile-tool-call {
-  margin: var(--size-4-2) 0;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: var(--radius-m);
-  overflow: hidden;
+  margin: var(--size-4-1) 0;
 }
 
 .claudian-mobile-tool-call-header {
   display: flex;
   align-items: center;
   gap: var(--size-4-2);
-  padding: var(--size-4-2) var(--size-4-3);
-  min-height: 44px;
+  padding: var(--size-2-2) 0;
+  min-height: 36px;
   cursor: pointer;
-  background: var(--background-primary);
+  overflow: hidden;
+}
+
+.claudian-mobile-tool-call-header:active {
+  opacity: 0.7;
 }
 
 .claudian-mobile-tool-call-icon {
   display: flex;
-  color: var(--text-muted);
+  flex: 0 0 auto;
+  color: var(--cm-brand);
+}
+
+.claudian-mobile-tool-call-icon .svg-icon {
+  width: var(--icon-s);
+  height: var(--icon-s);
 }
 
 .claudian-mobile-tool-call-name {
-  font-weight: var(--font-semibold);
+  flex: 0 0 auto;
   font-family: var(--font-monospace);
+  font-size: var(--font-ui-small);
+  color: var(--text-normal);
+  white-space: nowrap;
 }
 
 .claudian-mobile-tool-call-summary {
-  color: var(--text-muted);
   flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .claudian-mobile-tool-call-status {
-  font-size: var(--font-ui-smaller);
-  color: var(--text-muted);
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  margin-left: auto;
 }
 
-.claudian-mobile-tool-call-status.claudian-mobile-tool-call-error {
-  color: var(--text-error);
+.claudian-mobile-tool-call-status .svg-icon {
+  width: 14px;
+  height: 14px;
 }
 
+.claudian-mobile-tool-call-status.is-running {
+  color: var(--cm-brand);
+}
+
+.claudian-mobile-tool-call-status.is-running .svg-icon {
+  animation: claudian-mobile-spin 0.8s linear infinite;
+}
+
+.claudian-mobile-tool-call-status.is-done {
+  color: var(--color-green);
+}
+
+.claudian-mobile-tool-call-status.is-error {
+  color: var(--color-red);
+}
+
+/* Expanded detail: indented behind a start border, like a thinking block. */
 .claudian-mobile-tool-call-body {
-  padding: var(--size-4-3);
-  border-top: 1px solid var(--background-modifier-border);
+  margin-inline-start: 7px;
+  padding: var(--size-2-2) 0 var(--size-2-2) var(--size-4-3);
+  border-inline-start: 2px solid var(--background-modifier-border);
 }
 
 .claudian-mobile-tool-call-input,
 .claudian-mobile-tool-call-result {
   font-family: var(--font-monospace);
   font-size: var(--font-ui-smaller);
+  line-height: 1.4;
+  color: var(--text-muted);
   white-space: pre-wrap;
   word-break: break-word;
-  background: var(--background-primary);
-  border-radius: var(--radius-s);
-  padding: var(--size-4-2);
+  background: transparent;
+  padding: 0;
   margin: 0 0 var(--size-4-2) 0;
 }
 
 .claudian-mobile-tool-call-result:last-child {
   margin-bottom: 0;
+}
+
+.claudian-mobile-tool-call-result:empty {
+  display: none;
 }

@@ -9,10 +9,10 @@ export const zhCn: Strings = {
   },
   chat: {
     placeholder: "向 Claudian 提问…",
-    newButton: "新对话",
+    welcome: "有什么可以帮你？",
     newButtonAria: "开始一段新对话",
-    sendButton: "发送",
-    stopButton: "停止",
+    sendButtonAria: "发送",
+    stopButtonAria: "停止",
     modelMenuTitle: "模型",
     modelButtonAria: (model) => `模型：${model}`,
     modelUnset: "模型",

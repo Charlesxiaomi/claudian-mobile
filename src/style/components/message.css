@@ -1,27 +1,36 @@
 .claudian-mobile-message {
-  max-width: 100%;
-  border-radius: var(--radius-l);
-  padding: var(--size-4-3);
+  border-radius: 8px;
+  padding: var(--size-4-2) var(--size-4-3);
   font-size: var(--font-ui-medium);
   line-height: var(--line-height-normal);
+  word-break: break-word;
 }
 
+/* User turn: subtle translucent bubble on the end side, like desktop Claudian. */
 .claudian-mobile-message-user {
   align-self: flex-end;
-  background: var(--interactive-accent);
-  color: var(--text-on-accent);
+  max-width: 88%;
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--text-normal);
+  border-end-end-radius: 4px;
 }
 
+body.theme-light .claudian-mobile-message-user {
+  background: rgba(0, 0, 0, 0.07);
+}
+
+/* Assistant turn: no bubble at all - flat, full-width text. */
 .claudian-mobile-message-assistant {
-  align-self: flex-start;
-  background: var(--background-secondary);
-  color: var(--text-normal);
+  align-self: stretch;
   width: 100%;
+  padding-inline: 0;
+  background: transparent;
+  color: var(--text-normal);
 }
 
 .claudian-mobile-message-error {
   align-self: stretch;
-  background: var(--background-modifier-error);
+  background: rgba(var(--color-red-rgb), 0.1);
   color: var(--text-error);
 }
 
@@ -32,4 +41,23 @@
 
 .claudian-mobile-message-text:empty {
   display: none;
+}
+
+.claudian-mobile-message-assistant .claudian-mobile-message-text p {
+  margin: 0 0 var(--size-4-2) 0;
+}
+
+.claudian-mobile-message-assistant .claudian-mobile-message-text p:last-child {
+  margin-bottom: 0;
+}
+
+.claudian-mobile-message-assistant .claudian-mobile-message-text pre {
+  background: rgba(0, 0, 0, 0.2);
+  padding: var(--size-4-2) var(--size-4-3);
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+body.theme-light .claudian-mobile-message-assistant .claudian-mobile-message-text pre {
+  background: rgba(0, 0, 0, 0.08);
 }
