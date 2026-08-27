@@ -1,6 +1,6 @@
 {
   "name": "claudian-mobile",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Claudian Mobile - a minimal AI vault agent for Obsidian, including mobile",
   "main": "main.js",
   "scripts": {
