@@ -230,7 +230,7 @@ export async function testConnection(opts: {
   timeoutMs?: number;
 }): Promise<void> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), opts.timeoutMs ?? 30_000);
+  const timer = window.setTimeout(() => controller.abort(), opts.timeoutMs ?? 30_000);
   try {
     const stream = streamMessage({
       apiKey: opts.apiKey,
@@ -253,7 +253,7 @@ export async function testConnection(opts: {
     // Stream closed without a single event: not a working streaming endpoint.
     throw new Error(t().agent.unknownApiError);
   } finally {
-    clearTimeout(timer);
+    window.clearTimeout(timer);
     controller.abort();
   }
 }

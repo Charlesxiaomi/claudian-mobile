@@ -53,7 +53,7 @@ export const zhCn: Strings = {
     languageAuto: "跟随 Obsidian",
     apiKey: "API 密钥",
     apiKeyDesc:
-      "以明文保存在本设备的仓库配置里（.obsidian/plugins/claudian-mobile/data.json）。" +
+      "以明文保存在本设备仓库配置文件夹下本插件的 data.json 里。" +
       "如果仓库会同步到其他设备，请不要使用你不愿意留在本设备上的密钥。",
     baseUrl: "接口地址",
     baseUrlDesc: (defaultUrl) =>

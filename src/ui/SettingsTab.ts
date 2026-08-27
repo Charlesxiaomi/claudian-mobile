@@ -36,11 +36,21 @@ export interface SettingsHost {
 }
 
 export class ClaudianMobileSettingsTab extends PluginSettingTab {
-  private readonly host: Plugin & SettingsHost;
+  // Typed as SettingsHost (not Plugin & SettingsHost) so member accesses
+  // resolve to our own interface: on `Plugin`, `settings` is an Obsidian
+  // 1.13+ API and would break the declared minAppVersion.
+  private readonly host: SettingsHost;
 
   constructor(app: App, host: Plugin & SettingsHost) {
     super(app, host);
     this.host = host;
+  }
+
+  /** Calls SettingTab.update() where it exists (1.13+); older apps redraw via display(). */
+  private requestUpdate(): void {
+    const tab = this as unknown as Partial<{ update(): void }>;
+    if (typeof tab.update === "function") tab.update();
+    else this.display();
   }
 
   /**
@@ -138,7 +148,7 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
         await this.host.saveSettings();
         this.host.onLanguageChanged?.();
         // Re-derive the definitions so every label picks up the new locale.
-        this.update();
+        this.requestUpdate();
         return;
       case "baseUrl":
         settings.baseUrl = String(value).trim() || DEFAULT_BASE_URL;
@@ -265,7 +275,7 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
   /** Redraws whichever rendering path is active. */
   private refresh(): void {
     if (this.usingFallback) this.display();
-    else this.update();
+    else this.requestUpdate();
   }
 
   private usingFallback = false;

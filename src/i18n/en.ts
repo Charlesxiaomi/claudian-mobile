@@ -55,7 +55,7 @@ export const en: Strings = {
     languageAuto: "Follow Obsidian",
     apiKey: "API key",
     apiKeyDesc:
-      "Stored in plaintext in this device's vault config (.obsidian/plugins/claudian-mobile/data.json). " +
+      "Stored in plaintext in this plugin's data.json inside the vault's config folder on this device. " +
       "Do not use a key you aren't comfortable having on this device, especially if the vault is synced.",
     baseUrl: "Base URL",
     baseUrlDesc: (defaultUrl) =>
