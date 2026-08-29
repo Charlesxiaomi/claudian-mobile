@@ -105,5 +105,7 @@ export interface Strings {
     feishuConnected: (name: string) => string;
     feishuConnectFailed: (detail: string) => string;
     feishuDisconnected: string;
+    tikhubApiKey: string;
+    tikhubApiKeyDesc: string;
   };
 }

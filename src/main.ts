@@ -26,7 +26,10 @@ export default class ClaudianMobilePlugin extends Plugin {
         await this.saveSettings();
       },
     );
-    this.tools = createToolRegistry(this.app.vault, this.feishu);
+    this.tools = createToolRegistry(this.app.vault, this.feishu, () => ({
+      apiKey: this.settings.tikhubApiKey,
+      baseUrl: this.settings.tikhubBaseUrl,
+    }));
     this.conversationStore = new ConversationStore(this, () => this.settings);
 
     this.registerView(VIEW_TYPE_CHAT, (leaf: WorkspaceLeaf) => new ChatView(leaf, this));
