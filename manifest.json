@@ -1,7 +1,7 @@
 {
   "id": "claudian-mobile",
   "name": "Claudian Mobile",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "minAppVersion": "1.7.2",
   "description": "A minimal AI writing and knowledge agent for your vault. Calls the Anthropic API directly, so it works on mobile as well as desktop.",
   "author": "Charlesxiaomi",
