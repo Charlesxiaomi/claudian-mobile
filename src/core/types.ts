@@ -67,6 +67,14 @@ export interface AgentSettings {
   chatZoom: number;
   /** Feishu connection state; null until the user connects. */
   feishu: FeishuAuth | null;
+  /** TikHub API key for the Douyin/Xiaohongshu tools; empty until set. */
+  tikhubApiKey: string;
+  /**
+   * TikHub endpoint. Not exposed in the settings UI: requests that fail at
+   * the network level automatically retry on the sibling domain (.io/.dev),
+   * so only a hand-edited data.json ever needs this.
+   */
+  tikhubBaseUrl: string;
 }
 
 // --- Anthropic Messages API streaming event shapes (subset actually used) ---

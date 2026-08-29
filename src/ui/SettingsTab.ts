@@ -5,6 +5,7 @@ import { DEFAULT_BASE_URL, fetchModels, testConnection } from "@/core/AnthropicC
 import type { AgentSettings, EffortLevel } from "@/core/types";
 import { EFFORT_LEVELS } from "@/core/types";
 import type { FeishuService } from "@/feishu/FeishuService";
+import { DEFAULT_TIKHUB_BASE_URL } from "@/tikhub/api";
 import { LANGUAGE_NAMES, LANGUAGE_SETTINGS, setLanguage, t } from "@/i18n";
 import type { LanguageSetting } from "@/i18n";
 import { ModelTestModal } from "@/ui/ModelTestModal";
@@ -28,6 +29,8 @@ export const DEFAULT_SETTINGS: AgentSettings = {
     "Reply in the language the user writes in.",
   chatZoom: 1,
   feishu: null,
+  tikhubApiKey: "",
+  tikhubBaseUrl: DEFAULT_TIKHUB_BASE_URL,
 };
 
 export interface SettingsHost {
@@ -137,6 +140,14 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
         render: (setting: Setting) => this.configureFeishuSetting(setting),
       },
       {
+        // Rendered imperatively so the input can be a masked password field.
+        name: s.tikhubApiKey,
+        desc: s.tikhubApiKeyDesc,
+        render: (setting: Setting) => {
+          setting.addText((text) => this.configureTikhubKeyText(text));
+        },
+      },
+      {
         name: s.language,
         desc: s.languageDesc,
         control: { type: "dropdown", key: "language", options: languageOptions },
@@ -200,6 +211,15 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
         this.host.settings.apiKey = value.trim();
         await this.host.saveSettings();
       });
+  }
+
+  /** Masked TikHub API-key input, shared by both rendering paths. */
+  private configureTikhubKeyText(text: TextComponent): void {
+    text.inputEl.type = "password";
+    text.setValue(this.host.settings.tikhubApiKey).onChange(async (value) => {
+      this.host.settings.tikhubApiKey = value.trim();
+      await this.host.saveSettings();
+    });
   }
 
   /** Model-id input with suggestion popover, shared by both rendering paths. */
@@ -436,6 +456,11 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
     });
 
     new Setting(containerEl).setName(s.feishu).then((setting) => this.configureFeishuSetting(setting));
+
+    new Setting(containerEl)
+      .setName(s.tikhubApiKey)
+      .setDesc(s.tikhubApiKeyDesc)
+      .addText((text) => this.configureTikhubKeyText(text));
 
     new Setting(containerEl)
       .setName(s.language)

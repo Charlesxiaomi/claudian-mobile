@@ -101,5 +101,9 @@ export const zhCn: Strings = {
     feishuConnected: (name) => (name ? `飞书已连接（${name}）。` : "飞书已连接。"),
     feishuConnectFailed: (detail) => `飞书连接失败：${detail}`,
     feishuDisconnected: "已断开飞书连接。",
+    tikhubApiKey: "TikHub API 密钥",
+    tikhubApiKeyDesc:
+      "填写后对话中可以通过 TikHub（tikhub.io）获取抖音视频详情、搜索小红书笔记。" +
+      "按请求计费，密钥在 user.tikhub.io 创建。和上面的 API 密钥一样，以明文存放在本插件的 data.json 中。",
   },
 };

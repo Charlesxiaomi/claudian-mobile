@@ -107,5 +107,10 @@ export const en: Strings = {
     feishuConnected: (name) => (name ? `Feishu connected as ${name}.` : "Feishu connected."),
     feishuConnectFailed: (detail) => `Feishu connection failed: ${detail}`,
     feishuDisconnected: "Feishu disconnected.",
+    tikhubApiKey: "TikHub API key",
+    tikhubApiKeyDesc:
+      "Lets chat fetch Douyin video details and search Xiaohongshu notes through TikHub (tikhub.io). " +
+      "Requests are pay-per-use on your TikHub account; create a token at user.tikhub.io. " +
+      "Stored in plaintext in this plugin's data.json, like the API key above.",
   },
 };
