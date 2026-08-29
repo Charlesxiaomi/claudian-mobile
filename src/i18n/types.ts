@@ -107,5 +107,12 @@ export interface Strings {
     feishuDisconnected: string;
     tikhubApiKey: string;
     tikhubApiKeyDesc: string;
+    /** aria-labels for the eye toggle on masked key inputs. */
+    revealKey: string;
+    hideKey: string;
+    dashscopeApiKey: string;
+    dashscopeApiKeyDesc: string;
+    siliconflowApiKey: string;
+    siliconflowApiKeyDesc: string;
   };
 }

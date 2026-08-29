@@ -105,5 +105,15 @@ export const zhCn: Strings = {
     tikhubApiKeyDesc:
       "填写后对话中可以通过 TikHub（tikhub.io）获取抖音视频详情、搜索小红书笔记。" +
       "按请求计费，密钥在 user.tikhub.io 创建。和上面的 API 密钥一样，以明文存放在本插件的 data.json 中。",
+    revealKey: "显示密钥",
+    hideKey: "隐藏密钥",
+    dashscopeApiKey: "阿里云百炼 API 密钥",
+    dashscopeApiKeyDesc:
+      "填写后对话中可以把小红书视频笔记的原声转成逐字稿（语音识别，走阿里云百炼/DashScope，推荐）。" +
+      "按音频时长计费，密钥在 bailian.console.aliyun.com 创建。和上面的 API 密钥一样，以明文存放在本插件的 data.json 中。",
+    siliconflowApiKey: "SiliconFlow API 密钥",
+    siliconflowApiKeyDesc:
+      "语音识别的免费备用通道：未填写百炼密钥或百炼调用失败时使用。" +
+      "免费模型高峰期可能过载报错，密钥在 cloud.siliconflow.cn 创建。和上面的 API 密钥一样，以明文存放在本插件的 data.json 中。",
   },
 };

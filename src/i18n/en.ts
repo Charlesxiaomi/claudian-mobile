@@ -112,5 +112,17 @@ export const en: Strings = {
       "Lets chat fetch Douyin video details and search Xiaohongshu notes through TikHub (tikhub.io). " +
       "Requests are pay-per-use on your TikHub account; create a token at user.tikhub.io. " +
       "Stored in plaintext in this plugin's data.json, like the API key above.",
+    revealKey: "Show key",
+    hideKey: "Hide key",
+    dashscopeApiKey: "Aliyun Bailian API key",
+    dashscopeApiKeyDesc:
+      "Lets chat transcribe the narration of Xiaohongshu video notes (speech-to-text via Aliyun Bailian / DashScope; recommended). " +
+      "Billed per audio duration; create a key at bailian.console.aliyun.com. " +
+      "Stored in plaintext in this plugin's data.json, like the API key above.",
+    siliconflowApiKey: "SiliconFlow API key",
+    siliconflowApiKeyDesc:
+      "Free fallback for speech-to-text, used when no Bailian key is set or the Bailian call fails. " +
+      "The free model can be overloaded at peak times; create a key at cloud.siliconflow.cn. " +
+      "Stored in plaintext in this plugin's data.json, like the API key above.",
   },
 };

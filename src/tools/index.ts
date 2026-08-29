@@ -13,10 +13,12 @@ import { createSearchVaultTool } from "./searchVault";
 import { createDouyinGetVideoTool } from "./tikhubDouyinVideo";
 import { createXhsGetNoteTool } from "./tikhubXhsNote";
 import { createXhsSearchNotesTool } from "./tikhubXhsSearch";
+import { createXhsGetTranscriptTool } from "./tikhubXhsTranscript";
+import type { AsrKeysGetter } from "./tikhubXhsTranscript";
 import { createXSearchTool } from "./tikhubXSearch";
 import { createWriteNoteTool } from "./writeNote";
 
-export function createToolRegistry(vault: Vault, feishu: FeishuService, tikhub: TikHubConfigGetter): Map<string, RegisteredTool> {
+export function createToolRegistry(vault: Vault, feishu: FeishuService, tikhub: TikHubConfigGetter, getAsrKeys: AsrKeysGetter): Map<string, RegisteredTool> {
   const tools = [
     createReadNoteTool(vault),
     createWriteNoteTool(vault),
@@ -33,6 +35,7 @@ export function createToolRegistry(vault: Vault, feishu: FeishuService, tikhub: 
     createDouyinGetVideoTool(tikhub),
     createXhsSearchNotesTool(tikhub),
     createXhsGetNoteTool(tikhub),
+    createXhsGetTranscriptTool(tikhub, getAsrKeys),
     createXSearchTool(tikhub),
   ];
   return new Map(tools.map((tool) => [tool.definition.name, tool]));

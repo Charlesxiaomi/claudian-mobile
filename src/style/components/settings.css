@@ -1,0 +1,21 @@
+/* Eye toggle appended to masked API-key inputs in the settings tab. */
+.claudian-mobile-key-reveal {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: var(--size-2-2);
+  margin-left: var(--size-2-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  min-height: 32px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.claudian-mobile-key-reveal:hover {
+  color: var(--text-normal);
+  background: transparent;
+  box-shadow: none;
+}

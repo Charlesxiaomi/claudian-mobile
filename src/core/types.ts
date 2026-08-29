@@ -69,6 +69,10 @@ export interface AgentSettings {
   feishu: FeishuAuth | null;
   /** TikHub API key for the Douyin/Xiaohongshu tools; empty until set. */
   tikhubApiKey: string;
+  /** Aliyun Bailian (DashScope) API key for speech-to-text (video transcripts); empty until set. */
+  dashscopeApiKey: string;
+  /** SiliconFlow API key — free speech-to-text fallback when DashScope is unset or fails; empty until set. */
+  siliconflowApiKey: string;
   /**
    * TikHub endpoint. Not exposed in the settings UI: requests that fail at
    * the network level automatically retry on the sibling domain (.io/.dev),

@@ -1,4 +1,4 @@
-import { AbstractInputSuggest, App, Notice, Plugin, PluginSettingTab, Setting } from "obsidian";
+import { AbstractInputSuggest, App, Notice, Plugin, PluginSettingTab, setIcon, Setting } from "obsidian";
 import type { SettingDefinitionItem, TextComponent } from "obsidian";
 
 import { DEFAULT_BASE_URL, fetchModels, testConnection } from "@/core/AnthropicClient";
@@ -31,6 +31,8 @@ export const DEFAULT_SETTINGS: AgentSettings = {
   feishu: null,
   tikhubApiKey: "",
   tikhubBaseUrl: DEFAULT_TIKHUB_BASE_URL,
+  dashscopeApiKey: "",
+  siliconflowApiKey: "",
 };
 
 export interface SettingsHost {
@@ -148,6 +150,22 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
         },
       },
       {
+        // Rendered imperatively so the input can be a masked password field.
+        name: s.dashscopeApiKey,
+        desc: s.dashscopeApiKeyDesc,
+        render: (setting: Setting) => {
+          setting.addText((text) => this.configureDashscopeKeyText(text));
+        },
+      },
+      {
+        // Rendered imperatively so the input can be a masked password field.
+        name: s.siliconflowApiKey,
+        desc: s.siliconflowApiKeyDesc,
+        render: (setting: Setting) => {
+          setting.addText((text) => this.configureSiliconflowKeyText(text));
+        },
+      },
+      {
         name: s.language,
         desc: s.languageDesc,
         control: { type: "dropdown", key: "language", options: languageOptions },
@@ -201,9 +219,30 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
     await this.host.saveSettings();
   }
 
+  /**
+   * Masks the input and appends an eye button that toggles it to plain
+   * text — masked keys are impossible to proofread on a phone otherwise.
+   */
+  private maskWithRevealToggle(text: TextComponent): void {
+    text.inputEl.type = "password";
+    const parent = text.inputEl.parentElement;
+    if (!parent) return;
+    const toggle = parent.createEl("button", {
+      cls: "claudian-mobile-key-reveal",
+      attr: { type: "button", "aria-label": t().settings.revealKey },
+    });
+    setIcon(toggle, "eye");
+    toggle.addEventListener("click", () => {
+      const reveal = text.inputEl.type === "password";
+      text.inputEl.type = reveal ? "text" : "password";
+      setIcon(toggle, reveal ? "eye-off" : "eye");
+      toggle.setAttribute("aria-label", reveal ? t().settings.hideKey : t().settings.revealKey);
+    });
+  }
+
   /** Masked API-key input, shared by both rendering paths. */
   private configureApiKeyText(text: TextComponent): void {
-    text.inputEl.type = "password";
+    this.maskWithRevealToggle(text);
     text
       .setPlaceholder("sk-...")
       .setValue(this.host.settings.apiKey)
@@ -215,9 +254,27 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
 
   /** Masked TikHub API-key input, shared by both rendering paths. */
   private configureTikhubKeyText(text: TextComponent): void {
-    text.inputEl.type = "password";
+    this.maskWithRevealToggle(text);
     text.setValue(this.host.settings.tikhubApiKey).onChange(async (value) => {
       this.host.settings.tikhubApiKey = value.trim();
+      await this.host.saveSettings();
+    });
+  }
+
+  /** Masked DashScope API-key input, shared by both rendering paths. */
+  private configureDashscopeKeyText(text: TextComponent): void {
+    this.maskWithRevealToggle(text);
+    text.setValue(this.host.settings.dashscopeApiKey).onChange(async (value) => {
+      this.host.settings.dashscopeApiKey = value.trim();
+      await this.host.saveSettings();
+    });
+  }
+
+  /** Masked SiliconFlow API-key input, shared by both rendering paths. */
+  private configureSiliconflowKeyText(text: TextComponent): void {
+    this.maskWithRevealToggle(text);
+    text.setValue(this.host.settings.siliconflowApiKey).onChange(async (value) => {
+      this.host.settings.siliconflowApiKey = value.trim();
       await this.host.saveSettings();
     });
   }
@@ -461,6 +518,16 @@ export class ClaudianMobileSettingsTab extends PluginSettingTab {
       .setName(s.tikhubApiKey)
       .setDesc(s.tikhubApiKeyDesc)
       .addText((text) => this.configureTikhubKeyText(text));
+
+    new Setting(containerEl)
+      .setName(s.dashscopeApiKey)
+      .setDesc(s.dashscopeApiKeyDesc)
+      .addText((text) => this.configureDashscopeKeyText(text));
+
+    new Setting(containerEl)
+      .setName(s.siliconflowApiKey)
+      .setDesc(s.siliconflowApiKeyDesc)
+      .addText((text) => this.configureSiliconflowKeyText(text));
 
     new Setting(containerEl)
       .setName(s.language)
